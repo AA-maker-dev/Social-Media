@@ -22,9 +22,17 @@
         </div>
     </nav>
 
-    <main class="page-content">
+   <main class="page-content">
         <h1>Messages</h1>
-        <p>Your conversations will appear here.</p>
+        <div class="chat-container">
+            <div class="chat-window" id="chat-window">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Type a message...">
+                <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
     </main>
 
     <script src="../JS/index.js"></script>

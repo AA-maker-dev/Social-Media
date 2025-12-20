@@ -1,0 +1,6 @@
+@import url("styles.css");
+
+/* Notifications page styles */
+body { background-color: #fff7f5; }
+.page-content { padding: 28px; }
+.page-content h1 { color: #db2777; }

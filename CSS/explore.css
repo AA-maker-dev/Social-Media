@@ -1,0 +1,6 @@
+@import url("styles.css");
+
+/* Explore page styles */
+body { background-color: #fffaf0; }
+.page-content { padding: 28px; }
+.page-content h1 { color: #d97706; }

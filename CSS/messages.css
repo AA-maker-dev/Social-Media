@@ -1,0 +1,6 @@
+@import url("styles.css");
+
+/* Messages page styles */
+body { background-color: #f6fffa; }
+.page-content { padding: 28px; }
+.page-content h1 { color: #059669; }

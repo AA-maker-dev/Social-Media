@@ -1,0 +1,6 @@
+@import url("styles.css");
+
+/* Page-specific overrides for Home */
+body { background-color: #f7fbff; }
+.page-content { padding: 28px; }
+.page-content h1 { color: #1f6feb; }

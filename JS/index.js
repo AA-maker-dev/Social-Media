@@ -22,10 +22,10 @@ if (hamburger) {
 const likeButtons = document.querySelectorAll('.action-btn');
 likeButtons.forEach(button => {
     button.addEventListener('click', (e) => {
+        // Handle Like button
         if (button.innerHTML.includes('fa-heart')) {
             button.classList.toggle('liked');
             
-            // Update like count
             const postStats = button.closest('.post').querySelector('.post-stats');
             if (postStats) {
                 const likeSpan = postStats.querySelector('span:first-child');
@@ -38,8 +38,35 @@ likeButtons.forEach(button => {
                         likeCount--;
                         button.innerHTML = '<i class="far fa-heart"></i> Like';
                     }
-                    likeSpan.textContent = `${likeSpan.innerHTML.replace(/\d+/g, likeCount)}`;
+                    likeSpan.innerHTML = `<i class="fas fa-heart"></i> ${likeCount} likes`;
                 }
+            }
+            
+            // Heart animation
+            const heart = button.querySelector('i');
+            heart.style.animation = 'none';
+            setTimeout(() => {
+                heart.style.animation = 'heartBeat 0.6s';
+            }, 10);
+        }
+        
+        // Handle Bookmark button
+        if (button.innerHTML.includes('fa-bookmark')) {
+            button.classList.toggle('bookmarked');
+            if (button.classList.contains('bookmarked')) {
+                button.innerHTML = '<i class="fas fa-bookmark"></i> Bookmarked';
+            } else {
+                button.innerHTML = '<i class="far fa-bookmark"></i> Bookmark';
+            }
+        }
+        
+        // Handle Share button
+        if (button.innerHTML.includes('fa-share')) {
+            button.classList.toggle('shared');
+            if (button.classList.contains('shared')) {
+                button.innerHTML = '<i class="fas fa-share"></i> Shared';
+            } else {
+                button.innerHTML = '<i class="far fa-share"></i> Share';
             }
         }
     });

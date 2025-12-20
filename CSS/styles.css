@@ -379,6 +379,14 @@ body {
     color: #e0245e;
 }
 
+.action-btn.bookmarked {
+    color: var(--primary-color);
+}
+
+.action-btn.shared {
+    color: var(--primary-color);
+}
+
 /* Suggestions */
 .suggestion {
     display: flex;

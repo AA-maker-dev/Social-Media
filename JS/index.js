@@ -284,3 +284,41 @@ document.addEventListener("DOMContentLoaded", () => {
         peopleContainer.appendChild(div);
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const chatWindow = document.getElementById("chat-window");
+    const messageInput = document.getElementById("message-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // Sample conversation
+    const messages = [
+        { sender: "Maya", text: "Hey Abhi! How’s your project going?" },
+        { sender: "You", text: "Pretty good, just working on Nexora 🚀" },
+        { sender: "Maya", text: "That’s awesome! Can’t wait to see it." }
+    ];
+
+    // Render initial messages
+    messages.forEach(msg => addMessage(msg.sender, msg.text));
+
+    // Send new message
+    sendBtn.addEventListener("click", () => {
+        const text = messageInput.value.trim();
+        if (text !== "") {
+            addMessage("You", text);
+            messageInput.value = "";
+
+            // Simulate reply
+            setTimeout(() => {
+                addMessage("Maya", "Got it 👍");
+            }, 1000);
+        }
+    });
+
+    function addMessage(sender, text) {
+        const div = document.createElement("div");
+        div.classList.add("message", sender === "You" ? "sent" : "received");
+        div.innerHTML = `<p><strong>${sender}:</strong> ${text}</p>`;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight; // auto-scroll
+    }
+});

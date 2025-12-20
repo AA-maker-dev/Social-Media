@@ -236,3 +236,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     attachPostEventListeners();
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const posts = [
+        { user: "Abhi", content: "Exploring Nexora is amazing!", likes: 120 },
+        { user: "Maya", content: "Loving the new UI design ✨", likes: 95 },
+        { user: "Ravi", content: "JavaScript makes everything interactive!", likes: 80 }
+    ];
+
+    const topics = ["Web Development", "UI/UX Design", "JavaScript", "AI Trends"];
+
+    const people = [
+        { name: "Abhi", role: "Frontend Developer" },
+        { name: "Maya", role: "Designer" },
+        { name: "Ravi", role: "Engineer" }
+    ];
+
+    // Render posts
+    const postsContainer = document.querySelector(".posts-container");
+    posts.forEach(post => {
+        const div = document.createElement("div");
+        div.classList.add("post");
+        div.innerHTML = `
+            <p><strong>${post.user}</strong>: ${post.content}</p>
+            <span>❤️ ${post.likes} likes</span>
+        `;
+        postsContainer.appendChild(div);
+    });
+
+    // Render topics
+    const topicsList = document.querySelector(".topics-list");
+    topics.forEach(topic => {
+        const li = document.createElement("li");
+        li.textContent = `#${topic}`;
+        topicsList.appendChild(li);
+    });
+
+    // Render people
+    const peopleContainer = document.querySelector(".people-container");
+    people.forEach(person => {
+        const div = document.createElement("div");
+        div.classList.add("person");
+        div.innerHTML = `
+            <i class="fas fa-user"></i>
+            <p><strong>${person.name}</strong> - ${person.role}</p>
+        `;
+        peopleContainer.appendChild(div);
+    });
+});

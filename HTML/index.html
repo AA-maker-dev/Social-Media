@@ -12,7 +12,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <i class="fas fa-network-wired"></i> SocialHub
+                <i class="fas fa-network-wired"></i> Nexora
             </div>
             <ul class="nav-menu" id="navMenu">
                 <li><a href="#" class="nav-link">Home</a></li>
@@ -70,7 +70,7 @@
         </aside>
 
         <!-- Feed -->
-        <main class="feed">
+        <main class="feed" id="feed">
             <!-- Create Post -->
             <div class="post-creator">
                 <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
@@ -78,75 +78,15 @@
                 <button class="btn btn-secondary">Post</button>
             </div>
 
-            <!-- Posts -->
-            <div class="post">
-                <div class="post-header">
-                    <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
-                    <div class="post-info">
-                        <h4>Alex Turner</h4>
-                        <span class="post-time">2 hours ago</span>
-                    </div>
-                    <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-                <div class="post-content">
-                    <p>Just launched my new portfolio website! Check it out and let me know what you think. Built with HTML5, CSS3, and JavaScript. #webdesign #webdeveloper</p>
-                    <img src="../Images/post-image1.jpg" alt="Post image" class="post-image">
-                </div>
-                <div class="post-stats">
-                    <span><i class="fas fa-heart"></i> 254 likes</span>
-                    <span><i class="fas fa-share"></i> 12 shares</span>
-                </div>
-                <div class="post-actions">
-                    <button class="action-btn" id="likeBtn"><i class="far fa-heart"></i> Like</button>
-                    <button class="action-btn"><i class="far fa-bookmark"></i> Bookmark</button>
-                    <button class="action-btn"><i class="far fa-share"></i> Share</button>
-                </div>
+            <!-- Posts Container -->
+            <div id="posts-container">
+                <!-- Posts will be dynamically loaded here -->
             </div>
 
-            <div class="post">
-                <div class="post-header">
-                    <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
-                    <div class="post-info">
-                        <h4>Emma Wilson</h4>
-                        <span class="post-time">4 hours ago</span>
-                    </div>
-                    <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-                <div class="post-content">
-                    <p>Learning responsive web design is essential in 2025. Here are my top tips for creating mobile-first layouts 📱</p>
-                </div>
-                <div class="post-stats">
-                    <span><i class="fas fa-heart"></i> 512 likes</span>
-                    <span><i class="fas fa-share"></i> 34 shares</span>
-                </div>
-                <div class="post-actions">
-                    <button class="action-btn"><i class="far fa-heart"></i> Like</button>
-                    <button class="action-btn"><i class="far fa-bookmark"></i> Bookmark</button>
-                    <button class="action-btn"><i class="far fa-share"></i> Share</button>
-                </div>
-            </div>
-
-            <div class="post">
-                <div class="post-header">
-                    <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
-                    <div class="post-info">
-                        <h4>John Developer</h4>
-                        <span class="post-time">6 hours ago</span>
-                    </div>
-                    <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-                <div class="post-content">
-                    <p>🎉 Excited to announce that our team just hit 1 million downloads! Thank you all for the amazing support. Let's build something incredible together! 🚀</p>
-                </div>
-                <div class="post-stats">
-                    <span><i class="fas fa-heart"></i> 1.2K likes</span>
-                    <span><i class="fas fa-share"></i> 567 shares</span>
-                </div>
-                <div class="post-actions">
-                    <button class="action-btn"><i class="far fa-heart"></i> Like</button>
-                    <button class="action-btn"><i class="far fa-bookmark"></i> Bookmark</button>
-                    <button class="action-btn"><i class="far fa-share"></i> Share</button>
-                </div>
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading more posts...</p>
             </div>
         </main>
 

@@ -76,6 +76,12 @@
                 <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
                 <input type="text" class="post-input" placeholder="What's on your mind?">
                 <button class="btn btn-secondary">Post</button>
+                    <div class="image-upload-row">
+                        <label class="btn btn-small" for="image-input"><i class="fas fa-image"></i> Add Image</label>
+                        <input type="file" id="image-input" accept="image/*" multiple style="display:none">
+                        <button id="clear-posts" class="btn btn-small" style="margin-left:8px;background:#f5f5f5;color:var(--secondary-color);">Clear All Posts</button>
+                    </div>
+                    <div id="image-thumbs" class="image-preview" style="display:none"></div>
             </div>
 
             <!-- Posts Container -->

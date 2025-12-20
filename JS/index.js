@@ -1,186 +1,4 @@
-// Post Data Pool
-const authors = [
-    { name: 'Alex Turner', handle: '@alexturner' },
-    { name: 'Emma Wilson', handle: '@emmawilson' },
-    { name: 'John Developer', handle: '@johndev' },
-    { name: 'Sarah Chen', handle: '@sarahchen' },
-    { name: 'Mike Johnson', handle: '@mikej' },
-    { name: 'Lisa Anderson', handle: '@lisaa' },
-    { name: 'David Brown', handle: '@davidbrown' },
-    { name: 'Jennifer Lee', handle: '@jenlee' }
-];
-
-const postContents = [
-    'Just launched my new portfolio website! Check it out and let me know what you think. Built with HTML5, CSS3, and JavaScript. #webdesign #webdeveloper',
-    'Learning responsive web design is essential in 2025. Here are my top tips for creating mobile-first layouts 📱',
-    '🎉 Excited to announce that our team just hit 1 million downloads! Thank you all for the amazing support. Let\'s build something incredible together! 🚀',
-    'Finally completed my first React project! It\'s been a great learning experience. #ReactJS #FrontendDevelopment',
-    'Coffee and coding - the perfect combination ☕💻 Working on some interesting JavaScript challenges today',
-    'Web development is more exciting than ever! New frameworks, tools, and technologies emerge every day. What\'s your favorite? #WebDev',
-    'Just discovered the power of CSS Grid! Game-changer for creating complex layouts. #CSS #WebDesign',
-    'Collaborating with amazing designers on a new UI project. Design and development work best together! 🎨',
-    'APIs are like the backbone of modern web applications. Building scalable REST APIs today #BackendDevelopment',
-    'Version control is essential! Always commit with meaningful messages. Git tips and tricks 💡 #Git #Development'
-];
-
-const timeAgo = [
-    '1 hour ago',
-    '2 hours ago',
-    '3 hours ago',
-    '4 hours ago',
-    '5 hours ago',
-    '6 hours ago',
-    '1 day ago',
-    '2 days ago'
-];
-
-let postPage = 0;
-
-// Function to generate random post
-function generatePost() {
-    const author = authors[Math.floor(Math.random() * authors.length)];
-    const content = postContents[Math.floor(Math.random() * postContents.length)];
-    const time = timeAgo[Math.floor(Math.random() * timeAgo.length)];
-    const likes = Math.floor(Math.random() * 1000) + 50;
-    const shares = Math.floor(Math.random() * 200) + 10;
-
-    return {
-        author: author.name,
-        handle: author.handle,
-        content: content,
-        time: time,
-        likes: likes,
-        shares: shares
-    };
-}
-
-// Function to create post HTML
-function createPostHTML(post) {
-    return `
-        <div class="post">
-            <div class="post-header">
-                <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
-                <div class="post-info">
-                    <h4>${post.author}</h4>
-                    <span class="post-time">${post.time}</span>
-                </div>
-                <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-            </div>
-            <div class="post-content">
-                <p>${post.content}</p>
-            </div>
-            <div class="post-stats">
-                <span><i class="fas fa-heart"></i> ${post.likes} likes</span>
-                <span><i class="fas fa-share"></i> ${post.shares} shares</span>
-            </div>
-            <div class="post-actions">
-                <button class="action-btn"><i class="far fa-heart"></i> Like</button>
-                <button class="action-btn"><i class="far fa-bookmark"></i> Bookmark</button>
-                <button class="action-btn"><i class="far fa-share"></i> Share</button>
-            </div>
-        </div>
-    `;
-}
-
-// Function to load more posts
-function loadMorePosts() {
-    const container = document.getElementById('posts-container');
-    const loading = document.getElementById('loading');
-
-    // Show loading indicator
-    loading.style.display = 'flex';
-
-    // Simulate network delay
-    setTimeout(() => {
-        // Generate 3 new posts
-        for (let i = 0; i < 3; i++) {
-            const post = generatePost();
-            const postHTML = createPostHTML(post);
-            container.insertAdjacentHTML('beforeend', postHTML);
-        }
-
-        // Attach event listeners to new posts
-        attachPostEventListeners();
-
-        // Hide loading indicator
-        loading.style.display = 'none';
-
-        postPage++;
-    }, 600);
-}
-
-// Function to attach event listeners to action buttons
-function attachPostEventListeners() {
-    const actionButtons = document.querySelectorAll('.action-btn');
-
-    actionButtons.forEach(button => {
-        // Remove existing listeners to prevent duplicates
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
-
-        newButton.addEventListener('click', (e) => {
-            // Handle Like button
-            if (newButton.innerHTML.includes('fa-heart')) {
-                newButton.classList.toggle('liked');
-
-                const postStats = newButton.closest('.post').querySelector('.post-stats');
-                if (postStats) {
-                    const likeSpan = postStats.querySelector('span:first-child');
-                    if (likeSpan) {
-                        let likeCount = parseInt(likeSpan.textContent);
-                        if (newButton.classList.contains('liked')) {
-                            likeCount++;
-                            newButton.innerHTML = '<i class="fas fa-heart"></i> Unlike';
-                        } else {
-                            likeCount--;
-                            newButton.innerHTML = '<i class="far fa-heart"></i> Like';
-                        }
-                        likeSpan.innerHTML = `<i class="fas fa-heart"></i> ${likeCount} likes`;
-                    }
-                }
-
-                // Heart animation
-                const heart = newButton.querySelector('i');
-                heart.style.animation = 'none';
-                setTimeout(() => {
-                    heart.style.animation = 'heartBeat 0.6s';
-                }, 10);
-            }
-
-            // Handle Bookmark button
-            if (newButton.innerHTML.includes('fa-bookmark')) {
-                newButton.classList.toggle('bookmarked');
-                if (newButton.classList.contains('bookmarked')) {
-                    newButton.innerHTML = '<i class="fas fa-bookmark"></i> Bookmarked';
-                } else {
-                    newButton.innerHTML = '<i class="far fa-bookmark"></i> Bookmark';
-                }
-            }
-
-            // Handle Share button
-            if (newButton.innerHTML.includes('fa-share')) {
-                newButton.classList.toggle('shared');
-                if (newButton.classList.contains('shared')) {
-                    newButton.innerHTML = '<i class="fas fa-share"></i> Shared';
-                } else {
-                    newButton.innerHTML = '<i class="far fa-share"></i> Share';
-                }
-            }
-        });
-    });
-}
-
-// Infinite scroll functionality
-window.addEventListener('scroll', () => {
-    const scrollHeight = document.documentElement.scrollHeight;
-    const scrollTop = document.documentElement.scrollTop;
-    const clientHeight = document.documentElement.clientHeight;
-
-    // If user is near the bottom (within 500px)
-    if (scrollTop + clientHeight >= scrollHeight - 500) {
-        loadMorePosts();
-    }
-});
+// Simplified JS for index page
 
 // Mobile Navigation Toggle
 const hamburger = document.getElementById('hamburger');
@@ -192,7 +10,6 @@ if (hamburger) {
         navMenu.classList.toggle('active');
     });
 
-    // Close menu when a link is clicked
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -202,123 +19,314 @@ if (hamburger) {
     });
 }
 
-// Post Input Focus Effect
-const postInput = document.querySelector('.post-input');
-if (postInput) {
-    postInput.addEventListener('focus', () => {
-        postInput.style.boxShadow = '0 0 0 2px rgba(29, 161, 242, 0.2)';
-    });
+// Post creation with image upload, persistence, edit/delete, and actions
+const STORAGE_KEY = 'nexora_posts_v1';
 
-    postInput.addEventListener('blur', () => {
-        postInput.style.boxShadow = 'none';
-    });
-}
-
-// Add CSS animation for heart beat
-const style = document.createElement('style');
-style.innerHTML = `
-    @keyframes heartBeat {
-        0% { transform: scale(1); }
-        25% { transform: scale(1.3); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-`;
-document.head.appendChild(style);
-
-// Load initial posts on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Load 3 initial posts
-    for (let i = 0; i < 3; i++) {
-        const post = generatePost();
-        const postHTML = createPostHTML(post);
-        document.getElementById('posts-container').insertAdjacentHTML('beforeend', postHTML);
+    const imageInput = document.getElementById('image-input');
+    const thumbsContainer = document.getElementById('image-thumbs');
+    const postBtn = document.getElementById('post-btn');
+    const captionInput = document.getElementById('post-caption') || document.querySelector('.post-input');
+    const postsContainer = document.getElementById('posts-container');
+    const clearPostsBtn = document.getElementById('clear-posts');
+
+    let selectedImages = []; // Data URLs
+
+    // Load and render stored posts
+    const posts = loadPostsFromStorage();
+    renderAllPosts(posts);
+
+    imageInput && imageInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        const readers = files.map(file => fileToDataURL(file));
+        Promise.all(readers).then(dataUrls => {
+            selectedImages.push(...dataUrls);
+            renderThumbs();
+        });
+    });
+
+    postBtn && postBtn.addEventListener('click', () => {
+        const caption = (captionInput && captionInput.value || '').trim();
+        if (!caption && selectedImages.length === 0) {
+            alert('Please add a caption or image to post.');
+            return;
+        }
+
+        const post = {
+            id: Date.now().toString(),
+            caption: caption,
+            images: selectedImages.slice(),
+            likes: 0,
+            shares: 0,
+            bookmarked: false,
+            time: new Date().toISOString()
+        };
+
+        posts.unshift(post);
+        savePostsToStorage(posts);
+        renderPost(post, postsContainer, posts);
+
+        // reset
+        selectedImages = [];
+        renderThumbs();
+        if (captionInput) captionInput.value = '';
+    });
+
+    clearPostsBtn && clearPostsBtn.addEventListener('click', () => {
+        if (!confirm('Clear all posts? This cannot be undone locally.')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        posts.length = 0;
+        postsContainer.innerHTML = '';
+    });
+
+    function renderThumbs() {
+        if (!thumbsContainer) return;
+        thumbsContainer.innerHTML = '';
+        if (!selectedImages.length) {
+            thumbsContainer.style.display = 'none';
+            return;
+        }
+        thumbsContainer.style.display = 'block';
+        const row = document.createElement('div');
+        row.className = 'image-thumbs-row';
+        selectedImages.forEach((dataUrl, idx) => {
+            const t = document.createElement('div');
+            t.className = 'thumb';
+            t.innerHTML = `<img src="${dataUrl}" alt="thumb"><button class="thumb-remove" data-index="${idx}"><i class="fas fa-times"></i></button>`;
+            row.appendChild(t);
+        });
+        thumbsContainer.appendChild(row);
+
+        // attach remove handlers
+        thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const i = parseInt(btn.getAttribute('data-index'));
+                if (!isNaN(i)) {
+                    selectedImages.splice(i, 1);
+                    renderThumbs();
+                }
+            });
+        });
     }
-    attachPostEventListeners();
+
+    function fileToDataURL(file) {
+        return new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.onerror = rej;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Storage helpers
+    function loadPostsFromStorage() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function savePostsToStorage(postsArr) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
+    }
+
+    // Rendering
+    function renderAllPosts(postsArr) {
+        postsContainer.innerHTML = '';
+        postsArr.forEach(post => renderPost(post, postsContainer, postsArr));
+    }
+
+    function renderPost(post, container, postsArr) {
+        const postEl = document.createElement('div');
+        postEl.className = 'post';
+        postEl.dataset.id = post.id;
+
+        const header = document.createElement('div');
+        header.className = 'post-header';
+        header.innerHTML = `
+            <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
+            <div class="post-info">
+                <h4>You</h4>
+                <span class="post-time">${timeAgoShort(post.time)}</span>
+            </div>
+            <div style="margin-left:8px;display:flex;gap:8px;align-items:center">
+                <button class="btn-more btn-small post-edit">Edit</button>
+                <button class="btn-more btn-small post-delete">Delete</button>
+            </div>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'post-content';
+        if (post.caption) content.innerHTML = `<p class="post-caption">${escapeHtml(post.caption)}</p>`;
+
+        if (post.images && post.images.length) {
+            post.images.forEach(src => {
+                const img = document.createElement('img');
+                img.className = 'post-image';
+                img.src = src;
+                content.appendChild(img);
+            });
+        }
+
+        const stats = document.createElement('div');
+        stats.className = 'post-stats';
+        stats.innerHTML = `<span class="likes"><i class="fas fa-heart"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-share"></i> ${post.shares} shares</span>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        actions.innerHTML = `
+            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-heart"></i> Unlike' : '<i class="far fa-heart"></i> Like'}</button>
+            <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
+            <button class="action-share action-btn"><i class="far fa-share"></i> Share</button>
+        `;
+
+        postEl.appendChild(header);
+        postEl.appendChild(content);
+        postEl.appendChild(stats);
+        postEl.appendChild(actions);
+
+        container.insertAdjacentElement('afterbegin', postEl);
+
+        // handlers
+        const likeBtn = postEl.querySelector('.action-like');
+        const bookmarkBtn = postEl.querySelector('.action-bookmark');
+        const shareBtn = postEl.querySelector('.action-share');
+        const deleteBtn = postEl.querySelector('.post-delete');
+        const editBtn = postEl.querySelector('.post-edit');
+
+        likeBtn && likeBtn.addEventListener('click', () => {
+            post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
+            post._liked = !post._liked;
+            saveAndRefresh(post.id);
+        });
+
+        bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
+            post.bookmarked = !post.bookmarked;
+            saveAndRefresh(post.id);
+        });
+
+        shareBtn && shareBtn.addEventListener('click', () => {
+            post.shares = (post.shares || 0) + 1;
+            saveAndRefresh(post.id);
+            alert('Post shared (simulated)');
+        });
+
+        deleteBtn && deleteBtn.addEventListener('click', () => {
+            if (!confirm('Delete this post?')) return;
+            const i = postsArr.findIndex(p => p.id === post.id);
+            if (i > -1) {
+                postsArr.splice(i, 1);
+                savePostsToStorage(postsArr);
+                postEl.remove();
+            }
+        });
+
+        editBtn && editBtn.addEventListener('click', () => {
+            if (content.classList.contains('editing')) return;
+            content.classList.add('editing');
+            const captionEl = content.querySelector('.post-caption');
+            const current = captionEl ? captionEl.textContent : '';
+            const ta = document.createElement('textarea');
+            ta.value = current;
+            content.insertBefore(ta, content.firstChild);
+            if (captionEl) captionEl.style.display = 'none';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn btn-small';
+            saveBtn.textContent = 'Save';
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-small';
+            cancelBtn.style.marginLeft = '6px';
+            cancelBtn.textContent = 'Cancel';
+            content.appendChild(saveBtn);
+            content.appendChild(cancelBtn);
+
+            saveBtn.addEventListener('click', () => {
+                post.caption = ta.value.trim();
+                saveAndRefresh(post.id);
+                content.classList.remove('editing');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                if (captionEl) captionEl.style.display = '';
+                ta.remove();
+                saveBtn.remove();
+                cancelBtn.remove();
+                content.classList.remove('editing');
+            });
+        });
+
+        function saveAndRefresh(id) {
+            const idx = postsArr.findIndex(p => p.id === id);
+            if (idx > -1) postsArr[idx] = post;
+            savePostsToStorage(postsArr);
+            // update UI pieces
+            const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
+            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-heart"></i> ${post.likes} likes`;
+            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-heart"></i> Unlike' : '<i class="far fa-heart"></i> Like';
+            if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+            // caption refresh
+            const cap = postEl.querySelector('.post-caption');
+            if (cap) cap.innerHTML = escapeHtml(post.caption || '');
+        }
+
+    }
+
+    function timeAgoShort(iso) {
+        try {
+            const diff = Date.now() - new Date(iso).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h`;
+            const days = Math.floor(hrs / 24);
+            return `${days}d`;
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function escapeHtml(text) {
+        return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
+    }
+
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const posts = [
-        { user: "Abhi", content: "Exploring Nexora is amazing!", likes: 120 },
-        { user: "Maya", content: "Loving the new UI design ✨", likes: 95 },
-        { user: "Ravi", content: "JavaScript makes everything interactive!", likes: 80 }
-    ];
+// Keep chat setup if present in page
+document.addEventListener('DOMContentLoaded', () => {
+    const chatWindow = document.getElementById('chat-window');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
 
-    const topics = ["Web Development", "UI/UX Design", "JavaScript", "AI Trends"];
+    if (!chatWindow || !messageInput || !sendBtn) return;
 
-    const people = [
-        { name: "Abhi", role: "Frontend Developer" },
-        { name: "Maya", role: "Designer" },
-        { name: "Ravi", role: "Engineer" }
-    ];
-
-    // Render posts
-    const postsContainer = document.querySelector(".posts-container");
-    posts.forEach(post => {
-        const div = document.createElement("div");
-        div.classList.add("post");
-        div.innerHTML = `
-            <p><strong>${post.user}</strong>: ${post.content}</p>
-            <span>❤️ ${post.likes} likes</span>
-        `;
-        postsContainer.appendChild(div);
-    });
-
-    // Render topics
-    const topicsList = document.querySelector(".topics-list");
-    topics.forEach(topic => {
-        const li = document.createElement("li");
-        li.textContent = `#${topic}`;
-        topicsList.appendChild(li);
-    });
-
-    // Render people
-    const peopleContainer = document.querySelector(".people-container");
-    people.forEach(person => {
-        const div = document.createElement("div");
-        div.classList.add("person");
-        div.innerHTML = `
-            <i class="fas fa-user"></i>
-            <p><strong>${person.name}</strong> - ${person.role}</p>
-        `;
-        peopleContainer.appendChild(div);
-    });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const chatWindow = document.getElementById("chat-window");
-    const messageInput = document.getElementById("message-input");
-    const sendBtn = document.getElementById("send-btn");
-
-    // Sample conversation
     const messages = [
-        { sender: "Maya", text: "Hey Abhi! How’s your project going?" },
-        { sender: "You", text: "Pretty good, just working on Nexora 🚀" },
-        { sender: "Maya", text: "That’s awesome! Can’t wait to see it." }
+        { sender: 'Maya', text: "Hey Abhi! How’s your project going?" },
+        { sender: 'You', text: 'Pretty good, just working on Nexora 🚀' },
+        { sender: 'Maya', text: "That’s awesome! Can’t wait to see it." }
     ];
 
-    // Render initial messages
     messages.forEach(msg => addMessage(msg.sender, msg.text));
 
-    // Send new message
-    sendBtn.addEventListener("click", () => {
+    sendBtn.addEventListener('click', () => {
         const text = messageInput.value.trim();
-        if (text !== "") {
-            addMessage("You", text);
-            messageInput.value = "";
-
-            // Simulate reply
-            setTimeout(() => {
-                addMessage("Maya", "Got it 👍");
-            }, 1000);
+        if (text !== '') {
+            addMessage('You', text);
+            messageInput.value = '';
+            setTimeout(() => addMessage('Maya', 'Got it 👍'), 1000);
         }
     });
 
     function addMessage(sender, text) {
-        const div = document.createElement("div");
-        div.classList.add("message", sender === "You" ? "sent" : "received");
+        const div = document.createElement('div');
+        div.classList.add('message', sender === 'You' ? 'sent' : 'received');
         div.innerHTML = `<p><strong>${sender}:</strong> ${text}</p>`;
         chatWindow.appendChild(div);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // auto-scroll
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 });

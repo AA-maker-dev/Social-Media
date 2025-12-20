@@ -4,3 +4,32 @@
 body { background-color: #fffaf0; }
 .page-content { padding: 28px; }
 .page-content h1 { color: #d97706; }
+
+.posts-container .post,
+.people-container .person {
+    background: #f9f9f9;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.posts-container .post:hover,
+.people-container .person:hover {
+    transform: scale(1.02);
+    background: #eef;
+}
+
+.topics-list li {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 12px;
+    background: #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.topics-list li:hover {
+    background: #bbb;
+}

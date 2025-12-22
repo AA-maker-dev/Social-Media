@@ -74,7 +74,17 @@
             <!-- Create Post -->
             <div class="post-creator">
                 <img src="https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=" alt="User Avatar" class="avatar-sm">
+                
+                <!-- Text Input -->
                 <input type="text" class="post-input" placeholder="What's on your mind?">
+                
+                <!-- Image Upload -->
+                <label for="post-image" class="upload-btn">
+                    <i class="fas fa-image"></i> Add Image
+                </label>
+                <input type="file" id="post-image" accept="image/*" style="display:none;">
+                
+                <!-- Post Button -->
                 <button class="btn btn-secondary">Post</button>
             </div>
 

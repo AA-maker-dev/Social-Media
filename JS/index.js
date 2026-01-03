@@ -247,7 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rendering
     function renderAllPosts(postsArr) {
         postsContainer.innerHTML = '';
-        postsArr.forEach(post => renderPost(post, postsContainer, postsArr));
+        // Sort posts by time (newest first)
+        const sortedPosts = [...postsArr].sort((a, b) => {
+            const timeA = new Date(a.time || 0).getTime();
+            const timeB = new Date(b.time || 0).getTime();
+            return timeB - timeA; // Descending order (newest first)
+        });
+        sortedPosts.forEach(post => renderPost(post, postsContainer, postsArr));
     }
 
     function renderPost(post, container, postsArr) {

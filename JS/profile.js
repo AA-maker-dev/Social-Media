@@ -178,6 +178,50 @@ function renderPhotos() {
     });
 }
 
+// Render saved posts
+function renderSavedPosts() {
+    const grid = document.getElementById('savedPostsGrid');
+    if (!grid) return;
+    
+    // Use same grid style as posts
+    grid.className = 'posts-grid';
+    grid.innerHTML = '';
+    
+    // Show some saved posts (can be filtered from main posts)
+    const savedPosts = samplePosts.slice(0, 3);
+    
+    if (savedPosts.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--gray-color);">
+                <i class="fas fa-bookmark" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                <h3>No saved posts yet</h3>
+                <p>Posts you save will appear here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    savedPosts.forEach((post, index) => {
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.innerHTML = `
+            <img src="${post.image}" alt="Saved Post" class="post-card-image">
+            <div class="post-card-content">
+                <div class="post-card-stats">
+                    <span><i class="fas fa-heart"></i> ${post.likes}</span>
+                    <span><i class="fas fa-comment"></i> ${post.comments}</span>
+                    <span><i class="fas fa-bookmark" style="color: var(--primary-color);"></i> Saved</span>
+                </div>
+            </div>
+        `;
+        card.addEventListener('click', () => {
+            alert(`Viewing saved post ${post.id}`);
+        });
+        grid.appendChild(card);
+    });
+}
+
 // Setup event listeners
 function setupEventListeners() {
     // Tab buttons

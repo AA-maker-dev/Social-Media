@@ -273,9 +273,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h4>You</h4>
                 <span class="post-time">${timeAgoShort(post.time)}</span>
             </div>
-            <div style="margin-left:8px;display:flex;gap:8px;align-items:center">
-                <button class="btn-more btn-small post-edit">Edit</button>
-                <button class="btn-more btn-small post-delete">Delete</button>
+            <div class="post-menu-container" style="position: relative;">
+                <button class="post-menu-btn" title="More options">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="post-menu-dropdown" style="display: none;">
+                    <button class="post-menu-item post-edit">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="post-menu-item post-delete">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
             </div>
         `;
 

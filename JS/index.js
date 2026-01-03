@@ -195,6 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function savePostsToStorage(postsArr) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
+        // Dispatch event to update profile page if it's open
+        window.dispatchEvent(new Event('postsUpdated'));
     }
 
     // Rendering

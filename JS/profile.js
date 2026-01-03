@@ -132,24 +132,66 @@ function renderPosts() {
     const grid = document.getElementById('postsGrid');
     grid.innerHTML = '';
     
-    samplePosts.forEach((post, index) => {
+    const posts = loadPostsFromStorage();
+    
+    if (posts.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--gray-color);">
+                <i class="fas fa-images" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                <h3>No posts yet</h3>
+                <p>Posts you create will appear here</p>
+            </div>
+        `;
+        updatePostsCount();
+        return;
+    }
+    
+    // Sort posts by time (newest first)
+    const sortedPosts = [...posts].sort((a, b) => new Date(b.time) - new Date(a.time));
+    
+    sortedPosts.forEach((post, index) => {
         const card = document.createElement('div');
         card.className = 'post-card';
         card.style.animationDelay = `${index * 0.1}s`;
+        card.dataset.postId = post.id;
+        
+        // Get first image if available
+        const postImage = post.images && post.images.length > 0 ? post.images[0] : null;
+        
+        // Use shares as comments count (or you can add a comments field later)
+        const commentsCount = post.shares || 0;
+        
+        let imageHtml = '';
+        if (postImage) {
+            imageHtml = `<img src="${postImage}" alt="Post" class="post-card-image">`;
+        } else {
+            // If no image, show a placeholder or caption preview
+            imageHtml = `
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                    ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
+                </div>
+            `;
+        }
+        
         card.innerHTML = `
-            <img src="${post.image}" alt="Post" class="post-card-image">
+            ${imageHtml}
             <div class="post-card-content">
+                ${post.caption && postImage ? `<p style="font-size: 13px; color: var(--gray-color); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(post.caption)}</p>` : ''}
                 <div class="post-card-stats">
-                    <span><i class="fas fa-heart"></i> ${post.likes}</span>
-                    <span><i class="fas fa-comment"></i> ${post.comments}</span>
+                    <span><i class="fas fa-heart"></i> ${post.likes || 0}</span>
+                    <span><i class="fas fa-comment"></i> ${commentsCount}</span>
+                    ${post.shares ? `<span><i class="fas fa-share"></i> ${post.shares}</span>` : ''}
                 </div>
             </div>
         `;
         card.addEventListener('click', () => {
-            alert(`Viewing post ${post.id}`);
+            // Could navigate to post detail or show modal
+            console.log(`Viewing post ${post.id}`);
         });
         grid.appendChild(card);
     });
+    
+    updatePostsCount();
 }
 
 // Render photos

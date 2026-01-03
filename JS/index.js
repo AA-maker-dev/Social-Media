@@ -133,6 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedImages = []; // Data URLs
 
+    // Close all post menus when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.post-menu-container')) {
+            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+        }
+    });
+
     // Load and render stored posts
     const posts = loadPostsFromStorage();
     renderAllPosts(posts);
@@ -341,13 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             // Toggle current menu
             menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!menuContainer.contains(e.target)) {
-                menuDropdown.style.display = 'none';
-            }
         });
 
         likeBtn && likeBtn.addEventListener('click', () => {

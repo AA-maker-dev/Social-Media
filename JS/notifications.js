@@ -277,11 +277,11 @@ function createNotificationElement(notif, index) {
 // Get icon class for notification type
 function getIconClass(type) {
     const icons = {
-        'like': 'fas fa-heart',
+        'like': 'fas fa-thumbs-up',
         'comment': 'fas fa-comment',
         'follow': 'fas fa-user-plus',
         'mention': 'fas fa-at',
-        'share': 'fas fa-share'
+        'share': 'fas fa-paper-plane'
     };
     return icons[type] || 'fas fa-bell';
 }

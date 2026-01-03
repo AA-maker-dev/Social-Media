@@ -98,34 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePostsCount();
     });
     
-    // Use MutationObserver to detect when Posts tab becomes visible
-    const postsTab = document.getElementById('postsTab');
-    if (postsTab) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const target = mutation.target;
-                    if (target.classList.contains('active') && target.id === 'postsTab') {
-                        // Posts tab just became active, refresh posts
-                        renderPosts();
-                        updatePostsCount();
-                    }
-                }
-            });
-        });
-        
-        observer.observe(postsTab, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-    }
-    
-    // Also add a direct check - refresh posts every time Posts tab is clicked
-    const postsTabBtn = document.querySelector('[data-tab="posts"]');
-    if (postsTabBtn) {
-        const originalSwitchTab = switchTab;
-        // Posts tab button will trigger switchTab which now refreshes posts
-    }
+    // Force refresh posts on initial load
+    setTimeout(() => {
+        renderPosts();
+        updatePostsCount();
+    }, 100);
 });
 
 // Storage functions
@@ -191,14 +168,17 @@ function renderProfile() {
 // Render posts
 function renderPosts() {
     const grid = document.getElementById('postsGrid');
-    if (!grid) return; // Exit if grid doesn't exist (tab not active)
+    if (!grid) {
+        console.log('Posts grid not found');
+        return; // Exit if grid doesn't exist (tab not active)
+    }
     
     grid.innerHTML = '';
     
     const posts = loadPostsFromStorage();
-    console.log('Loading posts from storage:', posts.length, 'posts found');
+    console.log('Loading posts from storage:', posts.length, 'posts found', posts);
     
-    if (posts.length === 0) {
+    if (!posts || posts.length === 0) {
         grid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--gray-color);">
                 <i class="fas fa-images" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>

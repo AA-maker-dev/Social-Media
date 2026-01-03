@@ -127,6 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
         posts.unshift(post);
         savePostsToStorage(posts);
         renderPost(post, postsContainer, posts);
+        
+        // Dispatch event to update profile page if it's open
+        window.dispatchEvent(new Event('postsUpdated'));
 
         // reset
         selectedImages = [];

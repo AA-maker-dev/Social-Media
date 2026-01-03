@@ -65,6 +65,36 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPosts();
     renderPhotos();
     renderSavedPosts();
+    
+    // Listen for storage changes to update posts when new ones are created
+    window.addEventListener('storage', (e) => {
+        if (e.key === POSTS_STORAGE_KEY) {
+            renderPosts();
+            renderSavedPosts();
+        }
+    });
+    
+    // Also listen for custom event (when posts are updated in same tab)
+    window.addEventListener('postsUpdated', () => {
+        renderPosts();
+        renderSavedPosts();
+    });
+    
+    // Update when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            renderPosts();
+            renderSavedPosts();
+            updatePostsCount();
+        }
+    });
+    
+    // Update on page focus
+    window.addEventListener('focus', () => {
+        renderPosts();
+        renderSavedPosts();
+        updatePostsCount();
+    });
 });
 
 // Storage functions
@@ -220,8 +250,9 @@ function renderSavedPosts() {
     grid.className = 'posts-grid';
     grid.innerHTML = '';
     
-    // Show some saved posts (can be filtered from main posts)
-    const savedPosts = samplePosts.slice(0, 3);
+    // Get saved posts (posts with bookmarked: true)
+    const allPosts = loadPostsFromStorage();
+    const savedPosts = allPosts.filter(post => post.bookmarked === true);
     
     if (savedPosts.length === 0) {
         grid.innerHTML = `
@@ -234,22 +265,41 @@ function renderSavedPosts() {
         return;
     }
     
-    savedPosts.forEach((post, index) => {
+    // Sort by time (newest first)
+    const sortedSaved = [...savedPosts].sort((a, b) => new Date(b.time) - new Date(a.time));
+    
+    sortedSaved.forEach((post, index) => {
         const card = document.createElement('div');
         card.className = 'post-card';
         card.style.animationDelay = `${index * 0.1}s`;
+        
+        const postImage = post.images && post.images.length > 0 ? post.images[0] : null;
+        const commentsCount = post.shares || 0;
+        
+        let imageHtml = '';
+        if (postImage) {
+            imageHtml = `<img src="${postImage}" alt="Saved Post" class="post-card-image">`;
+        } else {
+            imageHtml = `
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                    ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
+                </div>
+            `;
+        }
+        
         card.innerHTML = `
-            <img src="${post.image}" alt="Saved Post" class="post-card-image">
+            ${imageHtml}
             <div class="post-card-content">
+                ${post.caption && postImage ? `<p style="font-size: 13px; color: var(--gray-color); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(post.caption)}</p>` : ''}
                 <div class="post-card-stats">
-                    <span><i class="fas fa-heart"></i> ${post.likes}</span>
-                    <span><i class="fas fa-comment"></i> ${post.comments}</span>
+                    <span><i class="fas fa-heart"></i> ${post.likes || 0}</span>
+                    <span><i class="fas fa-comment"></i> ${commentsCount}</span>
                     <span><i class="fas fa-bookmark" style="color: var(--primary-color);"></i> Saved</span>
                 </div>
             </div>
         `;
         card.addEventListener('click', () => {
-            alert(`Viewing saved post ${post.id}`);
+            console.log(`Viewing saved post ${post.id}`);
         });
         grid.appendChild(card);
     });

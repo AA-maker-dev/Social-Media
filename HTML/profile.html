@@ -9,24 +9,230 @@
     <title>Nexora - Profile</title>
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="logo"><i class="fas fa-network-wired"></i> Nexora</div>
-            <ul class="nav-menu">
+            <div class="logo">
+                <i class="fas fa-network-wired"></i> Nexora
+            </div>
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html" class="nav-link">Home</a></li>
                 <li><a href="explore.html" class="nav-link">Explore</a></li>
                 <li><a href="messages.html" class="nav-link">Messages</a></li>
                 <li><a href="notifications.html" class="nav-link">Notifications</a></li>
                 <li><a href="profile.html" class="nav-link active">Profile</a></li>
             </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
 
-    <main class="page-content">
-        <h1>Profile</h1>
-        <p>View and edit your profile information here.</p>
-    </main>
+    <!-- Profile Container -->
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-cover">
+                <div class="cover-image" id="coverImage">
+                    <button class="cover-edit-btn" id="coverEditBtn" title="Change cover photo">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="profile-info">
+                <div class="profile-avatar-section">
+                    <div class="avatar-wrapper">
+                        <img src="https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=" alt="Profile Avatar" class="profile-avatar" id="profileAvatar">
+                        <button class="avatar-edit-btn" id="avatarEditBtn" title="Change profile picture">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-name-section">
+                        <h1 id="profileName">Tester</h1>
+                        <p id="profileUsername">@admin</p>
+                        <p class="profile-bio" id="profileBio">Full-stack developer passionate about creating amazing user experiences. Building the future, one line of code at a time. 🚀</p>
+                    </div>
+                    
+                    <div class="profile-stats-section">
+                        <div class="stat-card">
+                            <span class="stat-value" id="followersCount">2.5K</span>
+                            <span class="stat-label">Followers</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="followingCount">842</span>
+                            <span class="stat-label">Following</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="postsCount">156</span>
+                            <span class="stat-label">Posts</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" id="editProfileBtn">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                        <button class="btn btn-secondary" id="shareProfileBtn">
+                            <i class="fas fa-share"></i> Share Profile
+                        </button>
+                        <button class="btn btn-icon" id="moreOptionsBtn" title="More options">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <script src="../JS/index.js"></script>
+        <!-- Profile Tabs -->
+        <div class="profile-tabs">
+            <button class="tab-btn active" data-tab="posts">
+                <i class="fas fa-th"></i> Posts
+            </button>
+            <button class="tab-btn" data-tab="about">
+                <i class="fas fa-user"></i> About
+            </button>
+            <button class="tab-btn" data-tab="photos">
+                <i class="fas fa-images"></i> Photos
+            </button>
+            <button class="tab-btn" data-tab="saved">
+                <i class="fas fa-bookmark"></i> Saved
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Posts Tab -->
+            <div class="tab-pane active" id="postsTab">
+                <div class="posts-grid" id="postsGrid">
+                    <!-- Posts will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- About Tab -->
+            <div class="tab-pane" id="aboutTab">
+                <div class="about-section">
+                    <div class="about-card">
+                        <h3><i class="fas fa-info-circle"></i> About</h3>
+                        <div class="about-item">
+                            <i class="fas fa-briefcase"></i>
+                            <div>
+                                <strong>Work</strong>
+                                <p id="workInfo">Full-stack Developer at Tech Corp</p>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <div>
+                                <strong>Education</strong>
+                                <p id="educationInfo">Computer Science, University of Technology</p>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <strong>Location</strong>
+                                <p id="locationInfo">San Francisco, CA</p>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-link"></i>
+                            <div>
+                                <strong>Website</strong>
+                                <p><a href="#" id="websiteLink">www.example.com</a></p>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>
+                                <strong>Joined</strong>
+                                <p id="joinedDate">January 2023</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="about-card">
+                        <h3><i class="fas fa-heart"></i> Interests</h3>
+                        <div class="interests-list" id="interestsList">
+                            <span class="interest-tag">Web Development</span>
+                            <span class="interest-tag">UI/UX Design</span>
+                            <span class="interest-tag">React</span>
+                            <span class="interest-tag">JavaScript</span>
+                            <span class="interest-tag">Open Source</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Tab -->
+            <div class="tab-pane" id="photosTab">
+                <div class="photos-grid" id="photosGrid">
+                    <!-- Photos will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Saved Tab -->
+            <div class="tab-pane" id="savedTab">
+                <div class="saved-posts-grid" id="savedPostsGrid">
+                    <!-- Saved posts will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Profile</h2>
+                <button class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label for="editName">Name</label>
+                        <input type="text" id="editName" placeholder="Your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editUsername">Username</label>
+                        <input type="text" id="editUsername" placeholder="@username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Bio</label>
+                        <textarea id="editBio" rows="4" placeholder="Tell us about yourself"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editWork">Work</label>
+                        <input type="text" id="editWork" placeholder="Your profession">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEducation">Education</label>
+                        <input type="text" id="editEducation" placeholder="Your education">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" placeholder="Your location">
+                    </div>
+                    <div class="form-group">
+                        <label for="editWebsite">Website</label>
+                        <input type="url" id="editWebsite" placeholder="https://yourwebsite.com">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../JS/profile.js"></script>
 </body>
 </html>

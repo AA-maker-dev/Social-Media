@@ -21,6 +21,7 @@ if (hamburger) {
 
 // Profile functionality
 const STORAGE_KEY = 'nexora_profile_v1';
+const POSTS_STORAGE_KEY = 'nexora_posts_v1';
 
 // Sample profile data
 const defaultProfile = {
@@ -34,48 +35,8 @@ const defaultProfile = {
     joined: 'January 2023',
     followers: '2.5K',
     following: '842',
-    posts: '156'
+    posts: '0'
 };
-
-// Sample posts data
-const samplePosts = [
-    {
-        id: 'p1',
-        image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400',
-        likes: 245,
-        comments: 32
-    },
-    {
-        id: 'p2',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400',
-        likes: 189,
-        comments: 18
-    },
-    {
-        id: 'p3',
-        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400',
-        likes: 312,
-        comments: 45
-    },
-    {
-        id: 'p4',
-        image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400',
-        likes: 156,
-        comments: 12
-    },
-    {
-        id: 'p5',
-        image: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=400',
-        likes: 278,
-        comments: 29
-    },
-    {
-        id: 'p6',
-        image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400',
-        likes: 201,
-        comments: 22
-    }
-];
 
 // Sample photos
 const samplePhotos = [
@@ -120,6 +81,36 @@ function saveProfile() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
 }
 
+// Load posts from storage
+function loadPostsFromStorage() {
+    try {
+        const raw = localStorage.getItem(POSTS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Update posts count in profile
+function updatePostsCount() {
+    const posts = loadPostsFromStorage();
+    const postsCount = posts.length;
+    profile.posts = postsCount.toString();
+    saveProfile();
+    
+    // Update display
+    const postsCountEl = document.getElementById('postsCount');
+    if (postsCountEl) {
+        postsCountEl.textContent = postsCount;
+    }
+    
+    // Also update home page if it exists
+    const homePostsCountEl = document.getElementById('homePostsCount');
+    if (homePostsCountEl) {
+        homePostsCountEl.textContent = postsCount;
+    }
+}
+
 // Render profile
 function renderProfile() {
     document.getElementById('profileName').textContent = profile.name;
@@ -127,7 +118,7 @@ function renderProfile() {
     document.getElementById('profileBio').textContent = profile.bio;
     document.getElementById('followersCount').textContent = profile.followers;
     document.getElementById('followingCount').textContent = profile.following;
-    document.getElementById('postsCount').textContent = profile.posts;
+    updatePostsCount(); // Update posts count from actual posts
     document.getElementById('workInfo').textContent = profile.work;
     document.getElementById('educationInfo').textContent = profile.education;
     document.getElementById('locationInfo').textContent = profile.location;

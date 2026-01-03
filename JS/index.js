@@ -368,6 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         deleteBtn && deleteBtn.addEventListener('click', () => {
+            menuDropdown.style.display = 'none';
             if (!confirm('Delete this post?')) return;
             const i = postsArr.findIndex(p => p.id === post.id);
             if (i > -1) {
@@ -378,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         editBtn && editBtn.addEventListener('click', () => {
+            menuDropdown.style.display = 'none';
             if (content.classList.contains('editing')) return;
             content.classList.add('editing');
             const captionEl = content.querySelector('.post-caption');

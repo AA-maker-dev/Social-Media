@@ -64,6 +64,18 @@ window.addEventListener('profileUpdated', () => {
     updateHomeProfile();
 });
 
+// Update profile when page becomes visible (user returns from profile page)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        updateHomeProfile();
+    }
+});
+
+// Update profile on page focus (when user switches back to this tab)
+window.addEventListener('focus', () => {
+    updateHomeProfile();
+});
+
 // Post creation with image upload, persistence, edit/delete, and actions
 const STORAGE_KEY = 'nexora_posts_v1';
 

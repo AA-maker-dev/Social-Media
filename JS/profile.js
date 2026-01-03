@@ -344,11 +344,8 @@ function handleSaveProfile(e) {
     window.dispatchEvent(new Event('profileUpdated'));
     
     // Also trigger storage event manually for cross-tab sync
-    window.dispatchEvent(new StorageEvent('storage', {
-        key: STORAGE_KEY,
-        newValue: JSON.stringify(profile),
-        storageArea: localStorage
-    }));
+    // Note: StorageEvent can't be manually created, so we'll rely on the custom event
+    // The storage event will fire automatically when localStorage is updated
     
     // Show success message
     showNotification('Profile updated successfully!', 'success');

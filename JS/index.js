@@ -19,10 +19,58 @@ if (hamburger) {
     });
 }
 
+// Profile data sync
+const PROFILE_STORAGE_KEY = 'nexora_profile_v1';
+
+function loadProfile() {
+    try {
+        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function updateHomeProfile() {
+    const profile = loadProfile();
+    if (profile) {
+        const nameEl = document.getElementById('homeProfileName');
+        const usernameEl = document.getElementById('homeProfileUsername');
+        const followersEl = document.getElementById('homeFollowersCount');
+        const followingEl = document.getElementById('homeFollowingCount');
+        const postsEl = document.getElementById('homePostsCount');
+        const postInput = document.getElementById('postInput');
+        
+        if (nameEl) nameEl.textContent = profile.name || 'Tester';
+        if (usernameEl) usernameEl.textContent = profile.username || '@admin';
+        if (followersEl) followersEl.textContent = profile.followers || '2.5K';
+        if (followingEl) followingEl.textContent = profile.following || '842';
+        if (postsEl) postsEl.textContent = profile.posts || '156';
+        if (postInput) {
+            postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
+        }
+    }
+}
+
+// Listen for storage changes (when profile is updated from another tab/page)
+window.addEventListener('storage', (e) => {
+    if (e.key === PROFILE_STORAGE_KEY) {
+        updateHomeProfile();
+    }
+});
+
+// Also listen for custom event (when profile is updated in same tab)
+window.addEventListener('profileUpdated', () => {
+    updateHomeProfile();
+});
+
 // Post creation with image upload, persistence, edit/delete, and actions
 const STORAGE_KEY = 'nexora_posts_v1';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Load and update profile data on page load
+    updateHomeProfile();
+    
     const imageInput = document.getElementById('post-image');
     const thumbsContainer = document.getElementById('image-thumbs');
     const postBtn = document.getElementById('post-btn');

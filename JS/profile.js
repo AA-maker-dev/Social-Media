@@ -340,6 +340,16 @@ function handleSaveProfile(e) {
     renderProfile();
     closeEditModal();
     
+    // Dispatch custom event to update home page if it's open
+    window.dispatchEvent(new Event('profileUpdated'));
+    
+    // Also trigger storage event manually for cross-tab sync
+    window.dispatchEvent(new StorageEvent('storage', {
+        key: STORAGE_KEY,
+        newValue: JSON.stringify(profile),
+        storageArea: localStorage
+    }));
+    
     // Show success message
     showNotification('Profile updated successfully!', 'success');
 }

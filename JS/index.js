@@ -41,14 +41,28 @@ function updateHomeProfile() {
         const postsEl = document.getElementById('homePostsCount');
         const postInput = document.getElementById('postInput');
         
+        // Update posts count from actual posts
+        const posts = loadPostsForHome();
+        const postsCount = posts.length;
+        
         if (nameEl) nameEl.textContent = profile.name || 'Tester';
         if (usernameEl) usernameEl.textContent = profile.username || '@admin';
         if (followersEl) followersEl.textContent = profile.followers || '2.5K';
         if (followingEl) followingEl.textContent = profile.following || '842';
-        if (postsEl) postsEl.textContent = profile.posts || '156';
+        if (postsEl) postsEl.textContent = postsCount;
         if (postInput) {
             postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
         }
+    }
+}
+
+// Helper function to load posts (accessible globally)
+function loadPostsForHome() {
+    try {
+        const raw = localStorage.getItem('nexora_posts_v1');
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
     }
 }
 
@@ -129,7 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPost(post, postsContainer, posts);
         
         // Dispatch event to update profile page if it's open
+        console.log('Dispatching postsUpdated event');
         window.dispatchEvent(new Event('postsUpdated'));
+        
+        // Also update posts count on home page
+        updateHomeProfile();
 
         // reset
         selectedImages = [];
@@ -183,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Storage helpers
+    // Storage helpers (inside DOMContentLoaded scope)
     function loadPostsFromStorage() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);

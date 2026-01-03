@@ -76,8 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Also listen for custom event (when posts are updated in same tab)
     window.addEventListener('postsUpdated', () => {
+        console.log('Posts updated event received');
         renderPosts();
         renderSavedPosts();
+        updatePostsCount();
     });
     
     // Update when page becomes visible
@@ -95,6 +97,35 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSavedPosts();
         updatePostsCount();
     });
+    
+    // Use MutationObserver to detect when Posts tab becomes visible
+    const postsTab = document.getElementById('postsTab');
+    if (postsTab) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    if (target.classList.contains('active') && target.id === 'postsTab') {
+                        // Posts tab just became active, refresh posts
+                        renderPosts();
+                        updatePostsCount();
+                    }
+                }
+            });
+        });
+        
+        observer.observe(postsTab, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+    
+    // Also add a direct check - refresh posts every time Posts tab is clicked
+    const postsTabBtn = document.querySelector('[data-tab="posts"]');
+    if (postsTabBtn) {
+        const originalSwitchTab = switchTab;
+        // Posts tab button will trigger switchTab which now refreshes posts
+    }
 });
 
 // Storage functions
@@ -160,9 +191,12 @@ function renderProfile() {
 // Render posts
 function renderPosts() {
     const grid = document.getElementById('postsGrid');
+    if (!grid) return; // Exit if grid doesn't exist (tab not active)
+    
     grid.innerHTML = '';
     
     const posts = loadPostsFromStorage();
+    console.log('Loading posts from storage:', posts.length, 'posts found');
     
     if (posts.length === 0) {
         grid.innerHTML = `
@@ -386,6 +420,14 @@ function switchTab(tab) {
         pane.classList.remove('active');
     });
     document.getElementById(`${tab}Tab`).classList.add('active');
+    
+    // Refresh content when switching to posts or saved tabs
+    if (tab === 'posts') {
+        renderPosts();
+        updatePostsCount();
+    } else if (tab === 'saved') {
+        renderSavedPosts();
+    }
 }
 
 // Open edit modal

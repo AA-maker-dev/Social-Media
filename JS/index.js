@@ -255,10 +255,14 @@ document.addEventListener('DOMContentLoaded', () => {
         postEl.className = 'post';
         postEl.dataset.id = post.id;
 
+        // Get profile picture for avatar
+        const profile = loadProfile();
+        const profilePicture = (profile && profile.profilePicture) ? profile.profilePicture : DEFAULT_AVATAR_URL;
+
         const header = document.createElement('div');
         header.className = 'post-header';
         header.innerHTML = `
-            <img src="../Images/avatar1.jpg" alt="User Avatar" class="avatar-sm">
+            <img src="${profilePicture}" alt="User Avatar" class="avatar-sm">
             <div class="post-info">
                 <h4>You</h4>
                 <span class="post-time">${timeAgoShort(post.time)}</span>

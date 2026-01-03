@@ -288,14 +288,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const stats = document.createElement('div');
         stats.className = 'post-stats';
-        stats.innerHTML = `<span class="likes"><i class="fas fa-heart"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-share"></i> ${post.shares} shares</span>`;
+        stats.innerHTML = `<span class="likes"><i class="fas fa-thumbs-up"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-paper-plane"></i> ${post.shares} shares</span>`;
 
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-heart"></i> Unlike' : '<i class="far fa-heart"></i> Like'}</button>
+            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like'}</button>
             <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
-            <button class="action-share action-btn"><i class="far fa-share"></i> Share</button>
+            <button class="action-share action-btn"><i class="far fa-paper-plane"></i> Share</button>
         `;
 
         postEl.appendChild(header);
@@ -380,8 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
             savePostsToStorage(postsArr);
             // update UI pieces
             const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
-            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-heart"></i> ${post.likes} likes`;
-            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-heart"></i> Unlike' : '<i class="far fa-heart"></i> Like';
+            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-thumbs-up"></i> ${post.likes} likes`;
+            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like';
             if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
             // caption refresh
             const cap = postEl.querySelector('.post-caption');

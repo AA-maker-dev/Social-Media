@@ -21,6 +21,7 @@ if (hamburger) {
 
 // Profile data sync
 const PROFILE_STORAGE_KEY = 'nexora_profile_v1';
+const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
 
 function loadProfile() {
     try {
@@ -52,6 +53,32 @@ function updateHomeProfile() {
         if (postsEl) postsEl.textContent = postsCount;
         if (postInput) {
             postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
+        }
+        
+        // Update avatars with profile picture
+        const profilePicture = profile.profilePicture || DEFAULT_AVATAR_URL;
+        
+        // Update sidebar avatar
+        const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
+        if (sidebarAvatar) {
+            sidebarAvatar.src = profilePicture;
+        }
+        
+        // Update post creator avatar
+        const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
+        if (postCreatorAvatar) {
+            postCreatorAvatar.src = profilePicture;
+        }
+    } else {
+        // If no profile, use default avatars
+        const profilePicture = DEFAULT_AVATAR_URL;
+        const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
+        if (sidebarAvatar) {
+            sidebarAvatar.src = profilePicture;
+        }
+        const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
+        if (postCreatorAvatar) {
+            postCreatorAvatar.src = profilePicture;
         }
     }
 }

@@ -23,7 +23,7 @@ if (hamburger) {
 const STORAGE_KEY = 'nexora_posts_v1';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const imageInput = document.getElementById('image-input');
+    const imageInput = document.getElementById('post-image');
     const thumbsContainer = document.getElementById('image-thumbs');
     const postBtn = document.getElementById('post-btn');
     const captionInput = document.getElementById('post-caption') || document.querySelector('.post-input');

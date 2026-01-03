@@ -47,24 +47,39 @@
                             <span class="stat-value">842</span>
                             <span class="stat-label">Following</span>
                         </div>
+                        <div class="stat">
+                            <span class="stat-value">156</span>
+                            <span class="stat-label">Posts</span>
+                        </div>
                     </div>
-                    <button class="btn btn-primary" >Edit Profile</button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
                 </div>
             </div>
 
             <div class="sidebar-card">
-                <h4>Trending</h4>
+                <h4><i class="fas fa-fire" style="color: #ff6b6b; margin-right: 8px;"></i>Trending</h4>
                 <div class="trending-item">
-                    <div class="trend-title">#WebDesign</div>
-                    <div class="trend-count">45K posts</div>
+                    <div>
+                        <div class="trend-title">#WebDesign</div>
+                        <div class="trend-count">45K posts · Trending</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--gray-color); opacity: 0.5;"></i>
                 </div>
                 <div class="trending-item">
-                    <div class="trend-title">#ReactJS</div>
-                    <div class="trend-count">38K posts</div>
+                    <div>
+                        <div class="trend-title">#ReactJS</div>
+                        <div class="trend-count">38K posts · Hot</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--gray-color); opacity: 0.5;"></i>
                 </div>
                 <div class="trending-item">
-                    <div class="trend-title">#WebDevelopment</div>
-                    <div class="trend-count">92K posts</div>
+                    <div>
+                        <div class="trend-title">#WebDevelopment</div>
+                        <div class="trend-count">92K posts · Popular</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--gray-color); opacity: 0.5;"></i>
                 </div>
             </div>
         </aside>
@@ -75,17 +90,26 @@
             <div class="post-creator">
                 <img src="https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=" alt="User Avatar" class="avatar-sm">
                 
-                <!-- Text Input -->
-                <input type="text" class="post-input" placeholder="What's on your mind?">
-                
-                <!-- Image Upload -->
-                <label for="post-image" class="upload-btn">
-                    <i class="fas fa-image"></i> Add Image
-                </label>
-                <input type="file" id="post-image" accept="image/*" style="display:none;">
-                
-                <!-- Post Button -->
-                <button class="btn btn-secondary">Post</button>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Text Input -->
+                    <input type="text" class="post-input" placeholder="What's on your mind, Tester? Share your thoughts...">
+                    
+                    <!-- Image Upload Row -->
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label for="post-image" class="upload-btn">
+                            <i class="fas fa-image"></i> Add Image
+                        </label>
+                        <input type="file" id="post-image" accept="image/*" style="display:none;">
+                        
+                        <!-- Post Button -->
+                        <button class="btn btn-secondary" id="post-btn">
+                            <i class="fas fa-paper-plane"></i> Post
+                        </button>
+                    </div>
+                    
+                    <!-- Image Thumbnails Container -->
+                    <div id="image-thumbs" style="display: none;"></div>
+                </div>
             </div>
 
             <!-- Posts Container -->
@@ -103,28 +127,28 @@
         <!-- Right Sidebar -->
         <aside class="right-sidebar">
             <div class="sidebar-card">
-                <h4>Suggested For You</h4>
+                <h4><i class="fas fa-user-plus" style="color: var(--primary-color); margin-right: 8px;"></i>Suggested For You</h4>
                 <div class="suggestion">
                     <img src="https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=" alt="User Avatar" class="avatar-sm">
-                    <div>
+                    <div style="flex: 1;">
                         <h5>Tech Enthusiast</h5>
-                        <p>Suggested for you</p>
+                        <p><i class="fas fa-users" style="font-size: 10px; margin-right: 4px;"></i>12.5K followers · Suggested for you</p>
                     </div>
                     <button class="btn btn-small">Follow</button>
                 </div>
                 <div class="suggestion">
                     <img src="https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=" alt="User Avatar" class="avatar-sm">
-                    <div>
+                    <div style="flex: 1;">
                         <h5>Design Studio</h5>
-                        <p>Popular</p>
+                        <p><i class="fas fa-star" style="font-size: 10px; margin-right: 4px; color: #ffd700;"></i>8.2K followers · Popular</p>
                     </div>
                     <button class="btn btn-small">Follow</button>
                 </div>
                 <div class="suggestion">
                     <img src="https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=" alt="User Avatar" class="avatar-sm">
-                    <div>
+                    <div style="flex: 1;">
                         <h5>Web Dev Pro</h5>
-                        <p>Suggested for you</p>
+                        <p><i class="fas fa-bolt" style="font-size: 10px; margin-right: 4px; color: #ff6b6b;"></i>25.8K followers · Suggested for you</p>
                     </div>
                     <button class="btn btn-small">Follow</button>
                 </div>

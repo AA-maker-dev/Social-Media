@@ -23,6 +23,9 @@ if (hamburger) {
 const STORAGE_KEY = 'nexora_profile_v1';
 const POSTS_STORAGE_KEY = 'nexora_posts_v1';
 
+// Default avatar URL
+const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+
 // Sample profile data
 const defaultProfile = {
     name: 'Tester',
@@ -35,7 +38,8 @@ const defaultProfile = {
     joined: 'January 2023',
     followers: '2.5K',
     following: '842',
-    posts: '0'
+    posts: '0',
+    profilePicture: null
 };
 
 // Sample photos
@@ -163,6 +167,12 @@ function renderProfile() {
     document.getElementById('websiteLink').textContent = profile.website;
     document.getElementById('websiteLink').href = profile.website.startsWith('http') ? profile.website : `https://${profile.website}`;
     document.getElementById('joinedDate').textContent = profile.joined;
+    
+    // Update profile avatar
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) {
+        profileAvatar.src = profile.profilePicture || DEFAULT_AVATAR_URL;
+    }
 }
 
 // Render posts
@@ -353,10 +363,54 @@ function setupEventListeners() {
     const editProfileForm = document.getElementById('editProfileForm');
     editProfileForm.addEventListener('submit', handleSaveProfile);
     
-    // Avatar edit
+    // Avatar edit - create hidden file input
     const avatarEditBtn = document.getElementById('avatarEditBtn');
+    const avatarFileInput = document.createElement('input');
+    avatarFileInput.type = 'file';
+    avatarFileInput.accept = 'image/*';
+    avatarFileInput.style.display = 'none';
+    document.body.appendChild(avatarFileInput);
+    
+    avatarFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB.');
+            return;
+        }
+        
+        // Convert to data URL
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataURL = event.target.result;
+            profile.profilePicture = dataURL;
+            saveProfile();
+            renderProfile();
+            
+            // Dispatch event to update home page
+            window.dispatchEvent(new Event('profileUpdated'));
+            
+            showNotification('Profile picture updated successfully!', 'success');
+        };
+        reader.onerror = () => {
+            alert('Error reading image file. Please try again.');
+        };
+        reader.readAsDataURL(file);
+        
+        // Reset input
+        avatarFileInput.value = '';
+    });
+    
     avatarEditBtn.addEventListener('click', () => {
-        alert('Avatar upload feature coming soon!');
+        avatarFileInput.click();
     });
     
     // Cover edit

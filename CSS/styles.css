@@ -175,6 +175,15 @@ body {
     width: 100%;
 }
 
+.nav-link.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    width: 100%;
+}
+
 .hamburger {
     display: none;
     flex-direction: column;

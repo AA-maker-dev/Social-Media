@@ -233,8 +233,7 @@ function renderPosts() {
                 ${post.caption && postImage ? `<p style="font-size: 13px; color: var(--gray-color); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(post.caption)}</p>` : ''}
                 <div class="post-card-stats">
                     <span><i class="fas fa-thumbs-up"></i> ${post.likes || 0}</span>
-                    <span><i class="fas fa-comment"></i> ${commentsCount}</span>
-                    ${post.shares ? `<span><i class="fas fa-paper-plane"></i> ${post.shares}</span>` : ''}
+                    <span><i class="fas fa-paper-plane"></i> ${post.shares || 0}</span>
                 </div>
             </div>
         `;
@@ -317,7 +316,7 @@ function renderSavedPosts() {
                 ${post.caption && postImage ? `<p style="font-size: 13px; color: var(--gray-color); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(post.caption)}</p>` : ''}
                 <div class="post-card-stats">
                     <span><i class="fas fa-thumbs-up"></i> ${post.likes || 0}</span>
-                    <span><i class="fas fa-comment"></i> ${commentsCount}</span>
+                    <span><i class="fas fa-paper-plane"></i> ${post.shares || 0}</span>
                     <span><i class="fas fa-bookmark" style="color: var(--primary-color);"></i> Saved</span>
                 </div>
             </div>

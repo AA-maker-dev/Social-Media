@@ -326,6 +326,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const shareBtn = postEl.querySelector('.action-share');
         const deleteBtn = postEl.querySelector('.post-delete');
         const editBtn = postEl.querySelector('.post-edit');
+        const menuBtn = postEl.querySelector('.post-menu-btn');
+        const menuDropdown = postEl.querySelector('.post-menu-dropdown');
+        const menuContainer = postEl.querySelector('.post-menu-container');
+        
+        // Toggle menu dropdown
+        menuBtn && menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close all other menus first
+            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+                if (dropdown !== menuDropdown) {
+                    dropdown.style.display = 'none';
+                }
+            });
+            // Toggle current menu
+            menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuContainer.contains(e.target)) {
+                menuDropdown.style.display = 'none';
+            }
+        });
 
         likeBtn && likeBtn.addEventListener('click', () => {
             post.likes = (post.likes || 0) + (post._liked ? -1 : 1);

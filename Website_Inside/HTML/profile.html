@@ -236,6 +236,51 @@
             </div>
         </div>
     </div>
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="modal-close" id="closeSettingsBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h4>Appearance</h4>
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Dark Mode</span>
+                </div>
+
+                <div class="settings-group">
+                    <h4>Notifications</h4>
+                    <label class="switch">
+                        <input type="checkbox" id="emailNotificationsToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Email Notifications</span>
+                </div>
+
+                <div class="settings-group">
+                    <h4>Security</h4>
+                    <button class="btn btn-secondary" id="changePasswordBtn">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+
+                <div class="settings-group danger">
+                    <button class="btn btn-danger" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="../JS/profile.js"></script>
 </body>

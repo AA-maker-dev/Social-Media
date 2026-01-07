@@ -559,3 +559,52 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// Settings Modal
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+const emailToggle = document.getElementById("emailNotificationsToggle");
+const logoutBtn = document.getElementById("logoutBtn");
+const changePasswordBtn = document.getElementById("changePasswordBtn");
+
+// Open / Close
+settingsBtn.addEventListener("click", () => {
+    settingsModal.classList.add("active");
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+    settingsModal.classList.remove("active");
+});
+
+// Load Settings
+darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
+emailToggle.checked = localStorage.getItem("emailNotifications") === "true";
+
+if (darkModeToggle.checked) {
+    document.body.classList.add("dark-mode");
+}
+
+// Dark Mode
+darkModeToggle.addEventListener("change", () => {
+    localStorage.setItem("darkMode", darkModeToggle.checked);
+    document.body.classList.toggle("dark-mode", darkModeToggle.checked);
+});
+
+// Email Notifications
+emailToggle.addEventListener("change", () => {
+    localStorage.setItem("emailNotifications", emailToggle.checked);
+});
+
+// Change Password
+changePasswordBtn.addEventListener("click", () => {
+    alert("Redirect to Change Password Page");
+});
+
+// Logout
+logoutBtn.addEventListener("click", () => {
+    localStorage.clear();
+    window.location.href = "login.html";
+});
+

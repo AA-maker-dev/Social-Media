@@ -1,3 +1,49 @@
+// ===============================================
+// SESSION & AUTHENTICATION MANAGEMENT
+// ===============================================
+
+// Check if user is logged in
+function checkUserSession() {
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        // Redirect to login if no session
+        window.location.href = '../../Login/FrontEnd/login.html';
+        return false;
+    }
+    return true;
+}
+
+// Load user session data
+function getUserSession() {
+    try {
+        const userSession = localStorage.getItem('userSession');
+        return userSession ? JSON.parse(userSession) : null;
+    } catch (e) {
+        console.error('Error loading user session:', e);
+        return null;
+    }
+}
+
+// Logout function
+function logout(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear session
+        localStorage.removeItem('userSession');
+        localStorage.removeItem('rememberUser');
+        
+        // Redirect to login page
+        window.location.href = '../../Login/FrontEnd/login.html';
+    }
+}
+
+// ===============================================
+// SIMPLIFIED JS FOR INDEX PAGE
+// ===============================================
+
 // Simplified JS for index page
 
 // Mobile Navigation Toggle
@@ -34,18 +80,20 @@ function loadProfile() {
 
 function updateHomeProfile() {
     const profile = loadProfile();
+    const userSession = getUserSession();
+    
+    const nameEl = document.getElementById('homeProfileName');
+    const usernameEl = document.getElementById('homeProfileUsername');
+    const followersEl = document.getElementById('homeFollowersCount');
+    const followingEl = document.getElementById('homeFollowingCount');
+    const postsEl = document.getElementById('homePostsCount');
+    const postInput = document.getElementById('postInput');
+    
+    // Update posts count from actual posts
+    const posts = loadPostsForHome();
+    const postsCount = posts.length;
+    
     if (profile) {
-        const nameEl = document.getElementById('homeProfileName');
-        const usernameEl = document.getElementById('homeProfileUsername');
-        const followersEl = document.getElementById('homeFollowersCount');
-        const followingEl = document.getElementById('homeFollowingCount');
-        const postsEl = document.getElementById('homePostsCount');
-        const postInput = document.getElementById('postInput');
-        
-        // Update posts count from actual posts
-        const posts = loadPostsForHome();
-        const postsCount = posts.length;
-        
         if (nameEl) nameEl.textContent = profile.name || 'Tester';
         if (usernameEl) usernameEl.textContent = profile.username || '@admin';
         if (followersEl) followersEl.textContent = profile.followers || '2.5K';
@@ -54,24 +102,32 @@ function updateHomeProfile() {
         if (postInput) {
             postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
         }
-        
-        // Update avatars with profile picture
-        const profilePicture = profile.profilePicture || DEFAULT_AVATAR_URL;
-        
-        // Update sidebar avatar
-        const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
-        if (sidebarAvatar) {
-            sidebarAvatar.src = profilePicture;
+    } else if (userSession) {
+        // Use session data if no profile yet
+        if (nameEl) nameEl.textContent = userSession.name || 'User';
+        if (usernameEl) usernameEl.textContent = userSession.username || '@user';
+        if (followersEl) followersEl.textContent = '0';
+        if (followingEl) followingEl.textContent = '0';
+        if (postsEl) postsEl.textContent = postsCount;
+        if (postInput) {
+            postInput.placeholder = `What's on your mind, ${userSession.name || 'User'}? Share your thoughts...`;
         }
-        
-        // Update post creator avatar
-        const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
-        if (postCreatorAvatar) {
-            postCreatorAvatar.src = profilePicture;
-        }
-    } else {
-        // If no profile, use default avatars
-        const profilePicture = DEFAULT_AVATAR_URL;
+    }
+    
+    // Update avatars with profile picture
+    const profilePicture = profile?.profilePicture || DEFAULT_AVATAR_URL;
+    
+    // Update sidebar avatar
+    const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
+    if (sidebarAvatar) {
+        sidebarAvatar.src = profilePicture;
+    }
+    
+    // Update post creator avatar
+    const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
+    if (postCreatorAvatar) {
+        postCreatorAvatar.src = profilePicture;
+    }
         const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
         if (sidebarAvatar) {
             sidebarAvatar.src = profilePicture;
@@ -121,6 +177,9 @@ window.addEventListener('focus', () => {
 const STORAGE_KEY = 'nexora_posts_v1';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check user session first
+    checkUserSession();
+    
     // Load and update profile data on page load
     updateHomeProfile();
     

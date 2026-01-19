@@ -1,3 +1,36 @@
+// ===================================
+// SESSION & AUTHENTICATION MANAGEMENT
+// ===================================
+
+// Check if user is logged in
+function checkUserSession() {
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        window.location.href = '../../Login/FrontEnd/login.html';
+        return false;
+    }
+    return true;
+}
+
+// Logout function
+function logout(event) {
+    if (event) event.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('userSession');
+        localStorage.removeItem('rememberUser');
+        window.location.href = '../../Login/FrontEnd/login.html';
+    }
+}
+
+// Check session on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkUserSession();
+});
+
+// ===================================
+// NOTIFICATIONS PAGE INTERACTIVE FUNCTIONALITY
+// ===================================
+
 // Notifications page interactive functionality
 
 // Mobile Navigation Toggle

@@ -196,15 +196,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedImages = []; // Data URLs
     let currentImageInput = imageInput; // Keep track of current input element
+    
+    // Debug logging
+    console.log('Initializing post creation...');
+    console.log('imageInput:', imageInput);
+    console.log('currentImageInput:', currentImageInput);
 
     // Helper function to attach change listener to image input
     function attachImageInputListener(input) {
-        if (!input) return;
+        if (!input) {
+            console.warn('Cannot attach listener - input is null/undefined');
+            return;
+        }
+        console.log('Attaching listener to input:', input);
         input.addEventListener('change', (e) => {
+            console.log('File selected:', e.target.files);
             const files = Array.from(e.target.files || []);
             if (!files.length) return;
             const readers = files.map(file => fileToDataURL(file));
             Promise.all(readers).then(dataUrls => {
+                console.log('Images loaded:', dataUrls.length);
                 selectedImages.push(...dataUrls);
                 renderThumbs();
             });
@@ -228,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAllPosts(posts);
 
     postBtn && postBtn.addEventListener('click', () => {
+        console.log('Post button clicked');
+        console.log('selectedImages.length:', selectedImages.length);
+        console.log('caption:', captionInput?.value);
         const caption = (captionInput && captionInput.value || '').trim();
         if (!caption && selectedImages.length === 0) {
             alert('Please add a caption or image to post.');
@@ -244,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
             time: new Date().toISOString()
         };
 
+        console.log('Creating post with', post.images.length, 'images');
         posts.unshift(post);
         savePostsToStorage(posts);
         renderPost(post, postsContainer, posts);
@@ -259,12 +274,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedImages = [];
         renderThumbs();
         if (captionInput) captionInput.value = '';
+        console.log('Resetting file input');
         // Reset file input - create a new input element to allow same file selection
         if (currentImageInput) {
+            console.log('Old input:', currentImageInput);
             const newInput = currentImageInput.cloneNode(true);
             currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
             currentImageInput = newInput;
+            console.log('New input:', currentImageInput);
             attachImageInputListener(currentImageInput);
+        } else {
+            console.warn('currentImageInput is null/undefined during reset');
         }
     });
 

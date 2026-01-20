@@ -661,13 +661,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('🗑️ All posts cleared!', 'info', 2000);
     });
 
-    // ========== SEARCH AND FILTER FUNCTIONALITY ==========
-    const searchInput = document.getElementById('searchPosts');
+    // ========== FILTER FUNCTIONALITY ==========
     const filterSelect = document.getElementById('filterPosts');
     const clearFilterBtn = document.getElementById('clearFilter');
 
-    function filterAndSearchPosts() {
-        const searchTerm = (searchInput?.value || '').toLowerCase();
+    function filterPosts() {
         const filterType = filterSelect?.value || 'all';
         
         let filtered = [...posts];
@@ -679,17 +677,10 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered = filtered.filter(p => p.bookmarked);
         }
 
-        // Search by caption
-        if (searchTerm) {
-            filtered = filtered.filter(p => 
-                (p.caption || '').toLowerCase().includes(searchTerm)
-            );
-        }
-
         // Render filtered posts
         postsContainer.innerHTML = '';
         if (filtered.length === 0) {
-            postsContainer.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--gray-color); font-size: 16px;">📭 No posts found. Try a different search or filter!</div>';
+            postsContainer.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--gray-color); font-size: 16px;">📭 No posts found!</div>';
             return;
         }
 
@@ -698,11 +689,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    searchInput && searchInput.addEventListener('input', filterAndSearchPosts);
-    filterSelect && filterSelect.addEventListener('change', filterAndSearchPosts);
+    filterSelect && filterSelect.addEventListener('change', filterPosts);
     
     clearFilterBtn && clearFilterBtn.addEventListener('click', () => {
-        if (searchInput) searchInput.value = '';
         if (filterSelect) filterSelect.value = 'all';
         renderAllPostsGlobal(posts);
         showToast('🔄 Filter cleared!', 'info', 1500);

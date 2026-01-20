@@ -195,6 +195,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearPostsBtn = document.getElementById('clear-posts');
 
     let selectedImages = []; // Data URLs
+    let currentImageInput = imageInput; // Keep track of current input element
+
+    // Helper function to attach change listener to image input
+    function attachImageInputListener(input) {
+        if (!input) return;
+        input.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            const readers = files.map(file => fileToDataURL(file));
+            Promise.all(readers).then(dataUrls => {
+                selectedImages.push(...dataUrls);
+                renderThumbs();
+            });
+        });
+    }
+
+    // Attach initial listener
+    attachImageInputListener(currentImageInput);
 
     // Close all post menus when clicking outside
     document.addEventListener('click', (e) => {
@@ -208,17 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load and render stored posts
     const posts = loadPostsFromStorage();
     renderAllPosts(posts);
-
-    imageInput && imageInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files || []);
-        if (!files.length) return;
-
-        const readers = files.map(file => fileToDataURL(file));
-        Promise.all(readers).then(dataUrls => {
-            selectedImages.push(...dataUrls);
-            renderThumbs();
-        });
-    });
 
     postBtn && postBtn.addEventListener('click', () => {
         const caption = (captionInput && captionInput.value || '').trim();
@@ -253,29 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderThumbs();
         if (captionInput) captionInput.value = '';
         // Reset file input - create a new input element to allow same file selection
-        if (imageInput) {
-            const newInput = imageInput.cloneNode(true);
-            imageInput.parentNode.replaceChild(newInput, imageInput);
-            // Re-attach event listener to new input
-            newInput.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files || []);
-                if (!files.length) return;
-                const readers = files.map(file => fileToDataURL(file));
-                Promise.all(readers).then(dataUrls => {
-                    selectedImages.push(...dataUrls);
-                    renderThumbs();
-                });
-            });
-            // Update reference to imageInput
-            document.getElementById('post-image').addEventListener('change', (e) => {
-                const files = Array.from(e.target.files || []);
-                if (!files.length) return;
-                const readers = files.map(file => fileToDataURL(file));
-                Promise.all(readers).then(dataUrls => {
-                    selectedImages.push(...dataUrls);
-                    renderThumbs();
-                });
-            });
+        if (currentImageInput) {
+            const newInput = currentImageInput.cloneNode(true);
+            currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
+            currentImageInput = newInput;
+            attachImageInputListener(currentImageInput);
         }
     });
 

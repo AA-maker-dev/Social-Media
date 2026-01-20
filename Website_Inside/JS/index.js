@@ -295,28 +295,55 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
         post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
         post._liked = !post._liked;
         saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+        
+        // Add animation to like button
+        likeBtn.style.transform = 'scale(1.2)';
+        setTimeout(() => { likeBtn.style.transform = 'scale(1)'; }, 200);
+        
+        // Show feedback
+        if (post._liked) {
+            showToast('❤️ You liked this post!', 'success', 1500);
+        }
     });
 
     bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
         post.bookmarked = !post.bookmarked;
         saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+        
+        // Add animation
+        bookmarkBtn.style.transform = 'scale(1.2)';
+        setTimeout(() => { bookmarkBtn.style.transform = 'scale(1)'; }, 200);
+        
+        // Show feedback
+        showToast(post.bookmarked ? '🔖 Post saved!' : '🔖 Post removed from saved', 'success', 1500);
     });
 
     shareBtn && shareBtn.addEventListener('click', () => {
         post.shares = (post.shares || 0) + 1;
         saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
-        alert('Post shared (simulated)');
+        
+        // Add animation
+        shareBtn.style.transform = 'scale(1.2)';
+        setTimeout(() => { shareBtn.style.transform = 'scale(1)'; }, 200);
+        
+        showToast('📤 Post shared!', 'success', 2000);
     });
 
     deleteBtn && deleteBtn.addEventListener('click', () => {
         menuDropdown.style.display = 'none';
-        if (!confirm('Delete this post?')) return;
+        if (!confirm('Are you sure you want to delete this post?')) return;
         const i = postsArr.findIndex(p => p.id === post.id);
         if (i > -1) {
             postsArr.splice(i, 1);
             savePostsToStorage(postsArr);
-            postEl.remove();
-            updateHomeProfile();
+            
+            // Smooth deletion animation
+            postEl.style.animation = 'slideUp 0.3s ease-out reverse';
+            setTimeout(() => {
+                postEl.remove();
+                updateHomeProfile();
+                showToast('🗑️ Post deleted successfully!', 'success', 2000);
+            }, 300);
         }
     });
 
@@ -328,16 +355,19 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
         const current = captionEl ? captionEl.textContent : '';
         const ta = document.createElement('textarea');
         ta.value = current;
+        ta.style.borderRadius = '8px';
+        ta.style.padding = '10px';
+        ta.style.borderColor = 'var(--primary-color)';
         content.insertBefore(ta, content.firstChild);
         if (captionEl) captionEl.style.display = 'none';
 
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn btn-small';
-        saveBtn.textContent = 'Save';
+        saveBtn.textContent = '💾 Save';
+        saveBtn.style.marginRight = '8px';
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'btn btn-small';
-        cancelBtn.style.marginLeft = '6px';
-        cancelBtn.textContent = 'Cancel';
+        cancelBtn.textContent = '✕ Cancel';
         content.appendChild(saveBtn);
         content.appendChild(cancelBtn);
 
@@ -345,6 +375,7 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
             post.caption = ta.value.trim();
             saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
             content.classList.remove('editing');
+            showToast('✏️ Post updated successfully!', 'success', 2000);
         });
 
         cancelBtn.addEventListener('click', () => {
@@ -464,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
     postBtn && postBtn.addEventListener('click', () => {
         const caption = (captionInput && captionInput.value || '').trim();
         if (!caption && selectedImages.length === 0) {
-            alert('Please add a caption or image to post.');
+            showToast('📝 Please add a caption or image to post.', 'error', 2000);
             return;
         }
 
@@ -475,6 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             likes: 0,
             shares: 0,
             bookmarked: false,
+            comments: [],
             time: new Date().toISOString()
         };
 
@@ -489,10 +521,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Also update posts count on home page
         updateHomeProfile();
 
-        // reset
+        // Reset
         selectedImages = [];
         renderThumbs();
         if (captionInput) captionInput.value = '';
+        
+        // Show success toast
+        showToast('✨ Post published successfully!', 'success', 2500);
     });
 
     clearPostsBtn && clearPostsBtn.addEventListener('click', () => {

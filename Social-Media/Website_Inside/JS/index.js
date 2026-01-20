@@ -17,9 +17,12 @@ function updateNavbarAuth() {
     const authNavItem = document.getElementById('authNavItem');
     const logoutNavItem = document.getElementById('logoutNavItem');
     
+    // Only show logout on profile page
+    const isProfilePage = window.location.pathname.includes('profile.html');
+    
     if (isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'none';
-        logoutNavItem.style.display = 'block';
+        logoutNavItem.style.display = isProfilePage ? 'block' : 'none';
     } else if (!isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'block';
         logoutNavItem.style.display = 'none';
@@ -466,7 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Post shared (simulated)');
         });
 
-        deleteBtn && deleteBtn.addEventListener('click', () => {
+        deleteBtn && deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             menuDropdown.style.display = 'none';
             if (!confirm('Delete this post?')) return;
             const i = postsArr.findIndex(p => p.id === post.id);
@@ -474,6 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 postsArr.splice(i, 1);
                 savePostsToStorage(postsArr);
                 postEl.remove();
+                // Update posts count on home page
+                updateHomeProfile();
             }
         });
 

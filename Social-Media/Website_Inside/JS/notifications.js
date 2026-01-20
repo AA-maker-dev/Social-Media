@@ -17,9 +17,12 @@ function updateNavbarAuth() {
     const authNavItem = document.getElementById('authNavItem');
     const logoutNavItem = document.getElementById('logoutNavItem');
     
+    // Only show logout on profile page
+    const isProfilePage = window.location.pathname.includes('profile.html');
+    
     if (isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'none';
-        logoutNavItem.style.display = 'block';
+        logoutNavItem.style.display = isProfilePage ? 'block' : 'none';
     } else if (!isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'block';
         logoutNavItem.style.display = 'none';

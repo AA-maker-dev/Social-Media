@@ -1,0 +1,551 @@
+// ===============================================
+// SESSION & AUTHENTICATION MANAGEMENT
+// ===============================================
+
+// Check if user is logged in (optional - does not redirect)
+function checkUserSession() {
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        return false;
+    }
+    return true;
+}
+
+// Update navbar based on login status
+function updateNavbarAuth() {
+    const isLoggedIn = checkUserSession();
+    const authNavItem = document.getElementById('authNavItem');
+    const logoutNavItem = document.getElementById('logoutNavItem');
+    
+    if (isLoggedIn && authNavItem && logoutNavItem) {
+        authNavItem.style.display = 'none';
+        logoutNavItem.style.display = 'block';
+    } else if (!isLoggedIn && authNavItem && logoutNavItem) {
+        authNavItem.style.display = 'block';
+        logoutNavItem.style.display = 'none';
+    }
+}
+
+// Load user session data
+function getUserSession() {
+    try {
+        const userSession = localStorage.getItem('userSession');
+        return userSession ? JSON.parse(userSession) : null;
+    } catch (e) {
+        console.error('Error loading user session:', e);
+        return null;
+    }
+}
+
+// Logout function
+function logout(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear session
+        localStorage.removeItem('userSession');
+        localStorage.removeItem('rememberUser');
+        
+        // Redirect to login page
+        window.location.href = '../../Login/FrontEnd/login.html';
+    }
+}
+
+// ===============================================
+// SIMPLIFIED JS FOR INDEX PAGE
+// ===============================================
+
+// Simplified JS for index page
+
+// Mobile Navigation Toggle
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.getElementById('navMenu');
+
+if (hamburger) {
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+        });
+    });
+}
+
+// Profile data sync
+const PROFILE_STORAGE_KEY = 'nexora_profile_v1';
+const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+
+function loadProfile() {
+    try {
+        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function updateHomeProfile() {
+    const profile = loadProfile();
+    const userSession = getUserSession();
+    
+    const nameEl = document.getElementById('homeProfileName');
+    const usernameEl = document.getElementById('homeProfileUsername');
+    const followersEl = document.getElementById('homeFollowersCount');
+    const followingEl = document.getElementById('homeFollowingCount');
+    const postsEl = document.getElementById('homePostsCount');
+    const postInput = document.getElementById('postInput');
+    
+    // Update posts count from actual posts
+    const posts = loadPostsForHome();
+    const postsCount = posts.length;
+    
+    if (profile) {
+        if (nameEl) nameEl.textContent = profile.name || 'Tester';
+        if (usernameEl) usernameEl.textContent = profile.username || '@admin';
+        if (followersEl) followersEl.textContent = profile.followers || '2.5K';
+        if (followingEl) followingEl.textContent = profile.following || '842';
+        if (postsEl) postsEl.textContent = postsCount;
+        if (postInput) {
+            postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
+        }
+    } else if (userSession) {
+        // Use session data if no profile yet
+        if (nameEl) nameEl.textContent = userSession.name || 'User';
+        if (usernameEl) usernameEl.textContent = userSession.username || '@user';
+        if (followersEl) followersEl.textContent = '0';
+        if (followingEl) followingEl.textContent = '0';
+        if (postsEl) postsEl.textContent = postsCount;
+        if (postInput) {
+            postInput.placeholder = `What's on your mind, ${userSession.name || 'User'}? Share your thoughts...`;
+        }
+    }
+    
+    // Update avatars with profile picture
+    const profilePicture = profile?.profilePicture || DEFAULT_AVATAR_URL;
+    
+    // Update sidebar avatar
+    const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
+    if (sidebarAvatar) {
+        sidebarAvatar.src = profilePicture;
+    }
+    
+    // Update post creator avatar
+    const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
+    if (postCreatorAvatar) {
+        postCreatorAvatar.src = profilePicture;
+    }
+}
+
+// Helper function to load posts (accessible globally)
+function loadPostsForHome() {
+    try {
+        const raw = localStorage.getItem('nexora_posts_v1');
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Listen for storage changes (when profile is updated from another tab/page)
+window.addEventListener('storage', (e) => {
+    if (e.key === PROFILE_STORAGE_KEY) {
+        updateHomeProfile();
+    }
+});
+
+// Also listen for custom event (when profile is updated in same tab)
+window.addEventListener('profileUpdated', () => {
+    updateHomeProfile();
+});
+
+// Update profile when page becomes visible (user returns from profile page)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        updateHomeProfile();
+    }
+});
+
+// Update profile on page focus (when user switches back to this tab)
+window.addEventListener('focus', () => {
+    updateHomeProfile();
+});
+
+// Post creation with image upload, persistence, edit/delete, and actions
+const STORAGE_KEY = 'nexora_posts_v1';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Update navbar authentication UI
+    updateNavbarAuth();
+    
+    // Load and update profile data on page load
+    updateHomeProfile();
+    
+    const imageInput = document.getElementById('post-image');
+    const thumbsContainer = document.getElementById('image-thumbs');
+    const postBtn = document.getElementById('post-btn');
+    const captionInput = document.getElementById('post-caption') || document.querySelector('.post-input');
+    const postsContainer = document.getElementById('posts-container');
+    const clearPostsBtn = document.getElementById('clear-posts');
+
+    let selectedImages = []; // Data URLs
+
+    // Close all post menus when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.post-menu-container')) {
+            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+        }
+    });
+
+    // Load and render stored posts
+    const posts = loadPostsFromStorage();
+    renderAllPosts(posts);
+
+    imageInput && imageInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        const readers = files.map(file => fileToDataURL(file));
+        Promise.all(readers).then(dataUrls => {
+            selectedImages.push(...dataUrls);
+            renderThumbs();
+        });
+    });
+
+    postBtn && postBtn.addEventListener('click', () => {
+        const caption = (captionInput && captionInput.value || '').trim();
+        if (!caption && selectedImages.length === 0) {
+            alert('Please add a caption or image to post.');
+            return;
+        }
+
+        const post = {
+            id: Date.now().toString(),
+            caption: caption,
+            images: selectedImages.slice(),
+            likes: 0,
+            shares: 0,
+            bookmarked: false,
+            time: new Date().toISOString()
+        };
+
+        posts.unshift(post);
+        savePostsToStorage(posts);
+        renderPost(post, postsContainer, posts);
+        
+        // Dispatch event to update profile page if it's open
+        console.log('Dispatching postsUpdated event');
+        window.dispatchEvent(new Event('postsUpdated'));
+        
+        // Also update posts count on home page
+        updateHomeProfile();
+
+        // reset
+        selectedImages = [];
+        renderThumbs();
+        if (captionInput) captionInput.value = '';
+    });
+
+    clearPostsBtn && clearPostsBtn.addEventListener('click', () => {
+        if (!confirm('Clear all posts? This cannot be undone locally.')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        posts.length = 0;
+        postsContainer.innerHTML = '';
+    });
+
+    function renderThumbs() {
+        if (!thumbsContainer) return;
+        thumbsContainer.innerHTML = '';
+        if (!selectedImages.length) {
+            thumbsContainer.style.display = 'none';
+            return;
+        }
+        thumbsContainer.style.display = 'block';
+        const row = document.createElement('div');
+        row.className = 'image-thumbs-row';
+        selectedImages.forEach((dataUrl, idx) => {
+            const t = document.createElement('div');
+            t.className = 'thumb';
+            t.innerHTML = `<img src="${dataUrl}" alt="thumb"><button class="thumb-remove" data-index="${idx}"><i class="fas fa-times"></i></button>`;
+            row.appendChild(t);
+        });
+        thumbsContainer.appendChild(row);
+
+        // attach remove handlers
+        thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const i = parseInt(btn.getAttribute('data-index'));
+                if (!isNaN(i)) {
+                    selectedImages.splice(i, 1);
+                    renderThumbs();
+                }
+            });
+        });
+    }
+
+    function fileToDataURL(file) {
+        return new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.onerror = rej;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Storage helpers (inside DOMContentLoaded scope)
+    function loadPostsFromStorage() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function savePostsToStorage(postsArr) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
+        // Dispatch event to update profile page if it's open
+        window.dispatchEvent(new Event('postsUpdated'));
+    }
+
+    // Rendering
+    function renderAllPosts(postsArr) {
+        postsContainer.innerHTML = '';
+        // Sort posts by time (newest first)
+        const sortedPosts = [...postsArr].sort((a, b) => {
+            const timeA = new Date(a.time || 0).getTime();
+            const timeB = new Date(b.time || 0).getTime();
+            return timeB - timeA; // Descending order (newest first)
+        });
+        sortedPosts.forEach(post => renderPost(post, postsContainer, postsArr));
+    }
+
+    function renderPost(post, container, postsArr) {
+        const postEl = document.createElement('div');
+        postEl.className = 'post';
+        postEl.dataset.id = post.id;
+
+        // Get profile picture for avatar
+        const profile = loadProfile();
+        const profilePicture = (profile && profile.profilePicture) ? profile.profilePicture : DEFAULT_AVATAR_URL;
+
+        const header = document.createElement('div');
+        header.className = 'post-header';
+        header.innerHTML = `
+            <img src="${profilePicture}" alt="User Avatar" class="avatar-sm">
+            <div class="post-info">
+                <h4>You</h4>
+                <span class="post-time">${timeAgoShort(post.time)}</span>
+            </div>
+            <div class="post-menu-container" style="position: relative;">
+                <button class="post-menu-btn" title="More options">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="post-menu-dropdown" style="display: none;">
+                    <button class="post-menu-item post-edit">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="post-menu-item post-delete">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'post-content';
+        if (post.caption) content.innerHTML = `<p class="post-caption">${escapeHtml(post.caption)}</p>`;
+
+        if (post.images && post.images.length) {
+            post.images.forEach(src => {
+                const img = document.createElement('img');
+                img.className = 'post-image';
+                img.src = src;
+                content.appendChild(img);
+            });
+        }
+
+        const stats = document.createElement('div');
+        stats.className = 'post-stats';
+        stats.innerHTML = `<span class="likes"><i class="fas fa-thumbs-up"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-paper-plane"></i> ${post.shares} shares</span>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        actions.innerHTML = `
+            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like'}</button>
+            <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
+            <button class="action-share action-btn"><i class="far fa-paper-plane"></i> Share</button>
+        `;
+
+        postEl.appendChild(header);
+        postEl.appendChild(content);
+        postEl.appendChild(stats);
+        postEl.appendChild(actions);
+
+        container.insertAdjacentElement('afterbegin', postEl);
+
+        // handlers
+        const likeBtn = postEl.querySelector('.action-like');
+        const bookmarkBtn = postEl.querySelector('.action-bookmark');
+        const shareBtn = postEl.querySelector('.action-share');
+        const deleteBtn = postEl.querySelector('.post-delete');
+        const editBtn = postEl.querySelector('.post-edit');
+        const menuBtn = postEl.querySelector('.post-menu-btn');
+        const menuDropdown = postEl.querySelector('.post-menu-dropdown');
+        const menuContainer = postEl.querySelector('.post-menu-container');
+        
+        // Toggle menu dropdown
+        menuBtn && menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close all other menus first
+            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+                if (dropdown !== menuDropdown) {
+                    dropdown.style.display = 'none';
+                }
+            });
+            // Toggle current menu
+            menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+
+        likeBtn && likeBtn.addEventListener('click', () => {
+            post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
+            post._liked = !post._liked;
+            saveAndRefresh(post.id);
+        });
+
+        bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
+            post.bookmarked = !post.bookmarked;
+            saveAndRefresh(post.id);
+        });
+
+        shareBtn && shareBtn.addEventListener('click', () => {
+            post.shares = (post.shares || 0) + 1;
+            saveAndRefresh(post.id);
+            alert('Post shared (simulated)');
+        });
+
+        deleteBtn && deleteBtn.addEventListener('click', () => {
+            menuDropdown.style.display = 'none';
+            if (!confirm('Delete this post?')) return;
+            const i = postsArr.findIndex(p => p.id === post.id);
+            if (i > -1) {
+                postsArr.splice(i, 1);
+                savePostsToStorage(postsArr);
+                postEl.remove();
+            }
+        });
+
+        editBtn && editBtn.addEventListener('click', () => {
+            menuDropdown.style.display = 'none';
+            if (content.classList.contains('editing')) return;
+            content.classList.add('editing');
+            const captionEl = content.querySelector('.post-caption');
+            const current = captionEl ? captionEl.textContent : '';
+            const ta = document.createElement('textarea');
+            ta.value = current;
+            content.insertBefore(ta, content.firstChild);
+            if (captionEl) captionEl.style.display = 'none';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn btn-small';
+            saveBtn.textContent = 'Save';
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-small';
+            cancelBtn.style.marginLeft = '6px';
+            cancelBtn.textContent = 'Cancel';
+            content.appendChild(saveBtn);
+            content.appendChild(cancelBtn);
+
+            saveBtn.addEventListener('click', () => {
+                post.caption = ta.value.trim();
+                saveAndRefresh(post.id);
+                content.classList.remove('editing');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                if (captionEl) captionEl.style.display = '';
+                ta.remove();
+                saveBtn.remove();
+                cancelBtn.remove();
+                content.classList.remove('editing');
+            });
+        });
+
+        function saveAndRefresh(id) {
+            const idx = postsArr.findIndex(p => p.id === id);
+            if (idx > -1) postsArr[idx] = post;
+            savePostsToStorage(postsArr);
+            // update UI pieces
+            const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
+            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-thumbs-up"></i> ${post.likes} likes`;
+            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like';
+            if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+            // caption refresh
+            const cap = postEl.querySelector('.post-caption');
+            if (cap) cap.innerHTML = escapeHtml(post.caption || '');
+        }
+
+    }
+
+    function timeAgoShort(iso) {
+        try {
+            const diff = Date.now() - new Date(iso).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h`;
+            const days = Math.floor(hrs / 24);
+            return `${days}d`;
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function escapeHtml(text) {
+        return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
+    }
+
+});
+
+// Keep chat setup if present in page
+document.addEventListener('DOMContentLoaded', () => {
+    const chatWindow = document.getElementById('chat-window');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    if (!chatWindow || !messageInput || !sendBtn) return;
+
+    const messages = [
+        { sender: 'Maya', text: "Hey Abhi! How’s your project going?" },
+        { sender: 'You', text: 'Pretty good, just working on Nexora 🚀' },
+        { sender: 'Maya', text: "That’s awesome! Can’t wait to see it." }
+    ];
+
+    messages.forEach(msg => addMessage(msg.sender, msg.text));
+
+    sendBtn.addEventListener('click', () => {
+        const text = messageInput.value.trim();
+        if (text !== '') {
+            addMessage('You', text);
+            messageInput.value = '';
+            setTimeout(() => addMessage('Maya', 'Got it 👍'), 1000);
+        }
+    });
+
+    function addMessage(sender, text) {
+        const div = document.createElement('div');
+        div.classList.add('message', sender === 'You' ? 'sent' : 'received');
+        div.innerHTML = `<p><strong>${sender}:</strong> ${text}</p>`;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+});

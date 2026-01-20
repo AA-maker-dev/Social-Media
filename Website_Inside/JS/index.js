@@ -269,6 +269,39 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
     postEl.appendChild(stats);
     postEl.appendChild(actions);
 
+    // Add comments section
+    const commentsSection = document.createElement('div');
+    commentsSection.className = 'post-comments-section';
+    commentsSection.style.display = 'none';
+    
+    const toggleCommentsBtn = document.createElement('button');
+    toggleCommentsBtn.className = 'toggle-comments-btn';
+    toggleCommentsBtn.textContent = `💬 ${post.comments?.length || 0} Comments`;
+    
+    const commentsContainer = document.createElement('div');
+    commentsContainer.className = 'comments-container';
+    
+    const commentInputRow = document.createElement('div');
+    commentInputRow.className = 'comment-input-row';
+    
+    const commentInput = document.createElement('textarea');
+    commentInput.className = 'comment-input';
+    commentInput.placeholder = 'Add a comment...';
+    commentInput.rows = '1';
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'comment-submit-btn';
+    submitBtn.textContent = 'Post';
+    
+    commentInputRow.appendChild(commentInput);
+    commentInputRow.appendChild(submitBtn);
+    
+    commentsSection.appendChild(toggleCommentsBtn);
+    commentsSection.appendChild(commentsContainer);
+    commentsSection.appendChild(commentInputRow);
+    
+    postEl.appendChild(commentsSection);
+
     container.insertAdjacentElement('afterbegin', postEl);
 
     // handlers
@@ -279,6 +312,86 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
     const editBtn = postEl.querySelector('.post-edit');
     const menuBtn = postEl.querySelector('.post-menu-btn');
     const menuDropdown = postEl.querySelector('.post-menu-dropdown');
+    
+    // Comment handlers
+    const toggleCommentsBtn = postEl.querySelector('.toggle-comments-btn');
+    const commentsSection = postEl.querySelector('.post-comments-section');
+    const commentsContainer = postEl.querySelector('.comments-container');
+    const submitCommentBtn = postEl.querySelector('.comment-submit-btn');
+    const commentInputField = postEl.querySelector('.comment-input');
+
+    // Render existing comments
+    function renderComments() {
+        commentsContainer.innerHTML = '';
+        const comments = post.comments || [];
+        if (comments.length === 0) {
+            commentsContainer.innerHTML = '<div style="text-align: center; color: var(--gray-color); font-size: 12px; padding: 10px;">No comments yet. Be the first!</div>';
+            return;
+        }
+        
+        comments.forEach(comment => {
+            const commentEl = document.createElement('div');
+            commentEl.className = 'comment';
+            commentEl.innerHTML = `
+                <img src="${loadProfile()?.profilePicture || DEFAULT_AVATAR_URL}" alt="Avatar" class="avatar-sm" style="border-radius: 50%;">
+                <div class="comment-content">
+                    <div class="comment-author">${loadProfile()?.name || 'You'}</div>
+                    <div class="comment-text">${escapeHtml(comment.text)}</div>
+                    <div class="comment-time">${timeAgoShort(comment.time)}</div>
+                </div>
+            `;
+            commentsContainer.appendChild(commentEl);
+        });
+    }
+
+    renderComments();
+
+    // Toggle comments visibility
+    toggleCommentsBtn && toggleCommentsBtn.addEventListener('click', () => {
+        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+        if (commentsSection.style.display === 'block') {
+            renderComments();
+        }
+    });
+
+    // Submit comment
+    submitCommentBtn && submitCommentBtn.addEventListener('click', () => {
+        const commentText = (commentInputField?.value || '').trim();
+        if (!commentText) {
+            showToast('💬 Please type a comment!', 'error', 1500);
+            return;
+        }
+
+        if (!post.comments) post.comments = [];
+        post.comments.push({
+            text: commentText,
+            time: new Date().toISOString()
+        });
+
+        saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+        
+        // Update comment button
+        toggleCommentsBtn.textContent = `💬 ${post.comments.length} Comments`;
+        
+        // Clear input and re-render
+        commentInputField.value = '';
+        renderComments();
+        showToast('✨ Comment posted!', 'success', 1500);
+    });
+
+    // Enter key to submit comment
+    commentInputField && commentInputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitCommentBtn.click();
+        }
+    });
+
+    // Auto-resize textarea
+    commentInputField && commentInputField.addEventListener('input', () => {
+        commentInputField.style.height = 'auto';
+        commentInputField.style.height = Math.min(commentInputField.scrollHeight, 100) + 'px';
+    });
     
     // Toggle menu dropdown
     menuBtn && menuBtn.addEventListener('click', (e) => {

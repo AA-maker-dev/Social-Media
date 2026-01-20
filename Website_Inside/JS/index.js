@@ -128,15 +128,6 @@ function updateHomeProfile() {
     if (postCreatorAvatar) {
         postCreatorAvatar.src = profilePicture;
     }
-        const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
-        if (sidebarAvatar) {
-            sidebarAvatar.src = profilePicture;
-        }
-        const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
-        if (postCreatorAvatar) {
-            postCreatorAvatar.src = profilePicture;
-        }
-    }
 }
 
 // Helper function to load posts (accessible globally)
@@ -320,18 +311,18 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
     const menuDropdown = postEl.querySelector('.post-menu-dropdown');
     
     // Comment handlers
-    const toggleCommentsBtn = postEl.querySelector('.toggle-comments-btn');
-    const commentsSection = postEl.querySelector('.post-comments-section');
-    const commentsContainer = postEl.querySelector('.comments-container');
+    const toggleCommentsBtnHandler = postEl.querySelector('.toggle-comments-btn');
+    const commentsSectionHandler = postEl.querySelector('.post-comments-section');
+    const commentsContainerHandler = postEl.querySelector('.comments-container');
     const submitCommentBtn = postEl.querySelector('.comment-submit-btn');
     const commentInputField = postEl.querySelector('.comment-input');
 
     // Render existing comments
     function renderComments() {
-        commentsContainer.innerHTML = '';
+        commentsContainerHandler.innerHTML = '';
         const comments = post.comments || [];
         if (comments.length === 0) {
-            commentsContainer.innerHTML = '<div style="text-align: center; color: var(--gray-color); font-size: 12px; padding: 10px;">No comments yet. Be the first!</div>';
+            commentsContainerHandler.innerHTML = '<div style="text-align: center; color: var(--gray-color); font-size: 12px; padding: 10px;">No comments yet. Be the first!</div>';
             return;
         }
         
@@ -346,16 +337,16 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
                     <div class="comment-time">${timeAgoShort(comment.time)}</div>
                 </div>
             `;
-            commentsContainer.appendChild(commentEl);
+            commentsContainerHandler.appendChild(commentEl);
         });
     }
 
     renderComments();
 
     // Toggle comments visibility
-    toggleCommentsBtn && toggleCommentsBtn.addEventListener('click', () => {
-        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
-        if (commentsSection.style.display === 'block') {
+    toggleCommentsBtnHandler && toggleCommentsBtnHandler.addEventListener('click', () => {
+        commentsSectionHandler.style.display = commentsSectionHandler.style.display === 'none' ? 'block' : 'none';
+        if (commentsSectionHandler.style.display === 'block') {
             renderComments();
         }
     });
@@ -377,7 +368,7 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
         saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
         
         // Update comment button
-        toggleCommentsBtn.textContent = `💬 ${post.comments.length} Comments`;
+        toggleCommentsBtnHandler.textContent = `💬 ${post.comments.length} Comments`;
         
         // Clear input and re-render
         commentInputField.value = '';
@@ -584,6 +575,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearPostsBtn = document.getElementById('clear-posts');
 
     let selectedImages = []; // Data URLs
+    let currentImageInput = imageInput; // Keep track of current input element
+    
+    // Debug logging
+    console.log('Initializing post creation...');
+    console.log('imageInput:', imageInput);
+    console.log('currentImageInput:', currentImageInput);
+
+    // Helper function to attach change listener to image input
+    function attachImageInputListener(input) {
+        if (!input) {
+            console.warn('Cannot attach listener - input is null/undefined');
+            return;
+        }
+        console.log('Attaching listener to input:', input);
+        input.addEventListener('change', (e) => {
+            console.log('File selected:', e.target.files);
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            const readers = files.map(file => fileToDataURL(file));
+            Promise.all(readers).then(dataUrls => {
+                console.log('Images loaded:', dataUrls.length);
+                selectedImages.push(...dataUrls);
+                renderThumbs();
+            });
+        });
+    }
+
+    // Attach initial listener
+    attachImageInputListener(currentImageInput);
 
     // Close all post menus when clicking outside
     document.addEventListener('click', (e) => {
@@ -604,18 +624,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    imageInput && imageInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files || []);
-        if (!files.length) return;
-
-        const readers = files.map(file => fileToDataURL(file));
-        Promise.all(readers).then(dataUrls => {
-            selectedImages.push(...dataUrls);
-            renderThumbs();
-        });
-    });
-
     postBtn && postBtn.addEventListener('click', () => {
+        console.log('Post button clicked');
+        console.log('selectedImages.length:', selectedImages.length);
+        console.log('caption:', captionInput?.value);
         const caption = (captionInput && captionInput.value || '').trim();
         if (!caption && selectedImages.length === 0) {
             showToast('📝 Please add a caption or image to post.', 'error', 2000);
@@ -633,6 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
             time: new Date().toISOString()
         };
 
+        console.log('Creating post with', post.images.length, 'images');
         posts.unshift(post);
         savePostsToStorage(posts);
         renderPostGlobal(post, postsContainer, posts, loadProfile()?.profilePicture || DEFAULT_AVATAR_URL);
@@ -648,6 +661,18 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedImages = [];
         renderThumbs();
         if (captionInput) captionInput.value = '';
+        console.log('Resetting file input');
+        // Reset file input - create a new input element to allow same file selection
+        if (currentImageInput) {
+            console.log('Old input:', currentImageInput);
+            const newInput = currentImageInput.cloneNode(true);
+            currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
+            currentImageInput = newInput;
+            console.log('New input:', currentImageInput);
+            attachImageInputListener(currentImageInput);
+        } else {
+            console.warn('currentImageInput is null/undefined during reset');
+        }
         
         // Show success toast
         showToast('✨ Post published successfully!', 'success', 2500);
@@ -659,53 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
         posts.length = 0;
         postsContainer.innerHTML = '';
         showToast('🗑️ All posts cleared!', 'info', 2000);
-    });
-
-    // ========== SEARCH AND FILTER FUNCTIONALITY ==========
-    const searchInput = document.getElementById('searchPosts');
-    const filterSelect = document.getElementById('filterPosts');
-    const clearFilterBtn = document.getElementById('clearFilter');
-
-    function filterAndSearchPosts() {
-        const searchTerm = (searchInput?.value || '').toLowerCase();
-        const filterType = filterSelect?.value || 'all';
-        
-        let filtered = [...posts];
-
-        // Filter by type
-        if (filterType === 'liked') {
-            filtered = filtered.filter(p => p._liked);
-        } else if (filterType === 'bookmarked') {
-            filtered = filtered.filter(p => p.bookmarked);
-        }
-
-        // Search by caption
-        if (searchTerm) {
-            filtered = filtered.filter(p => 
-                (p.caption || '').toLowerCase().includes(searchTerm)
-            );
-        }
-
-        // Render filtered posts
-        postsContainer.innerHTML = '';
-        if (filtered.length === 0) {
-            postsContainer.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--gray-color); font-size: 16px;">📭 No posts found. Try a different search or filter!</div>';
-            return;
-        }
-
-        filtered.forEach(post => {
-            renderPostGlobal(post, postsContainer, posts, loadProfile()?.profilePicture || DEFAULT_AVATAR_URL);
-        });
-    }
-
-    searchInput && searchInput.addEventListener('input', filterAndSearchPosts);
-    filterSelect && filterSelect.addEventListener('change', filterAndSearchPosts);
-    
-    clearFilterBtn && clearFilterBtn.addEventListener('click', () => {
-        if (searchInput) searchInput.value = '';
-        if (filterSelect) filterSelect.value = 'all';
-        renderAllPostsGlobal(posts);
-        showToast('🔄 Filter cleared!', 'info', 1500);
     });
 
     function renderThumbs() {

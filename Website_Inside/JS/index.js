@@ -648,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedImages = [];
         renderThumbs();
         if (captionInput) captionInput.value = '';
+        if (imageInput) imageInput.value = ''; // Reset file input to allow selecting same file again
         
         // Show success toast
         showToast('✨ Post published successfully!', 'success', 2500);

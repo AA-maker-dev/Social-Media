@@ -194,6 +194,12 @@ function renderAllPostsGlobal(postsArr) {
     if (!postsContainer) return;
     
     postsContainer.innerHTML = '';
+    
+    if (postsArr.length === 0) {
+        postsContainer.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: var(--gray-color);"><div style="font-size: 48px; margin-bottom: 16px;">📭</div><div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No Posts Found</div><div style="font-size: 14px;">Try adjusting your search or filters!</div></div>';
+        return;
+    }
+    
     const profile = loadProfile();
     const DEFAULT_AVATAR = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
     const profilePicture = (profile && profile.profilePicture) ? profile.profilePicture : DEFAULT_AVATAR;
@@ -591,7 +597,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load and render stored posts
     const posts = loadPostsFromStorage();
     if (postsContainer) {
-        renderAllPosts(posts);
+        if (posts.length === 0) {
+            postsContainer.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: var(--gray-color);"><div style="font-size: 48px; margin-bottom: 16px;">📭</div><div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No Posts Yet</div><div style="font-size: 14px;">Be the first to post something amazing! 🚀</div></div>';
+        } else {
+            renderAllPosts(posts);
+        }
     }
 
     imageInput && imageInput.addEventListener('change', (e) => {

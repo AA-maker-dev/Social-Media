@@ -65,7 +65,7 @@ function validateAndLogin(event) {
         
         // Redirect to dashboard after 1 second
         setTimeout(() => {
-            window.location.href = '../../../Website_Inside/HTML/index.html';
+            window.location.href = '../../Website_Inside/HTML/index.html';
         }, 1000);
     } else {
         showError('emailError', 'Invalid email or password');
@@ -120,7 +120,7 @@ function checkExistingSession() {
     const userSession = localStorage.getItem('userSession');
     if (userSession) {
         // User is already logged in, redirect to dashboard
-        window.location.href = '../../../Website_Inside/HTML/index.html';
+        window.location.href = '../../Website_Inside/HTML/index.html';
     }
 }
 

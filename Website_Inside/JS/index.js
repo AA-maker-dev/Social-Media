@@ -165,16 +165,259 @@ window.addEventListener('profileUpdated', () => {
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
         updateHomeProfile();
+        // Also reload posts when page becomes visible
+        const postsContainer = document.getElementById('posts-container');
+        if (postsContainer) {
+            const posts = loadPostsForHome();
+            renderAllPostsGlobal(posts);
+        }
     }
 });
 
 // Update profile on page focus (when user switches back to this tab)
 window.addEventListener('focus', () => {
     updateHomeProfile();
+    // Also reload posts when window regains focus
+    const postsContainer = document.getElementById('posts-container');
+    if (postsContainer) {
+        const posts = loadPostsForHome();
+        renderAllPostsGlobal(posts);
+    }
 });
 
 // Post creation with image upload, persistence, edit/delete, and actions
 const STORAGE_KEY = 'nexora_posts_v1';
+
+// Global post rendering functions
+function renderAllPostsGlobal(postsArr) {
+    const postsContainer = document.getElementById('posts-container');
+    if (!postsContainer) return;
+    
+    postsContainer.innerHTML = '';
+    const profile = loadProfile();
+    const DEFAULT_AVATAR = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+    const profilePicture = (profile && profile.profilePicture) ? profile.profilePicture : DEFAULT_AVATAR;
+    
+    // Sort posts by time (newest first)
+    const sortedPosts = [...postsArr].sort((a, b) => {
+        const timeA = new Date(a.time || 0).getTime();
+        const timeB = new Date(b.time || 0).getTime();
+        return timeB - timeA;
+    });
+    
+    sortedPosts.forEach(post => renderPostGlobal(post, postsContainer, postsArr, profilePicture));
+}
+
+function renderPostGlobal(post, container, postsArr, profilePicture) {
+    const DEFAULT_AVATAR = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+    const avatar = profilePicture || DEFAULT_AVATAR;
+    
+    const postEl = document.createElement('div');
+    postEl.className = 'post';
+    postEl.dataset.id = post.id;
+
+    const header = document.createElement('div');
+    header.className = 'post-header';
+    header.innerHTML = `
+        <img src="${avatar}" alt="User Avatar" class="avatar-sm">
+        <div class="post-info">
+            <h4>You</h4>
+            <span class="post-time">${timeAgoShort(post.time)}</span>
+        </div>
+        <div class="post-menu-container" style="position: relative;">
+            <button class="post-menu-btn" title="More options">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="post-menu-dropdown" style="display: none;">
+                <button class="post-menu-item post-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="post-menu-item post-delete">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    `;
+
+    const content = document.createElement('div');
+    content.className = 'post-content';
+    if (post.caption) content.innerHTML = `<p class="post-caption">${escapeHtml(post.caption)}</p>`;
+
+    if (post.images && post.images.length) {
+        post.images.forEach(src => {
+            const img = document.createElement('img');
+            img.className = 'post-image';
+            img.src = src;
+            content.appendChild(img);
+        });
+    }
+
+    const stats = document.createElement('div');
+    stats.className = 'post-stats';
+    stats.innerHTML = `<span class="likes"><i class="fas fa-thumbs-up"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-paper-plane"></i> ${post.shares} shares</span>`;
+
+    const actions = document.createElement('div');
+    actions.className = 'post-actions';
+    actions.innerHTML = `
+        <button class="action-like action-btn">${post.likes ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like'}</button>
+        <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
+        <button class="action-share action-btn"><i class="far fa-paper-plane"></i> Share</button>
+    `;
+
+    postEl.appendChild(header);
+    postEl.appendChild(content);
+    postEl.appendChild(stats);
+    postEl.appendChild(actions);
+
+    container.insertAdjacentElement('afterbegin', postEl);
+
+    // handlers
+    const likeBtn = postEl.querySelector('.action-like');
+    const bookmarkBtn = postEl.querySelector('.action-bookmark');
+    const shareBtn = postEl.querySelector('.action-share');
+    const deleteBtn = postEl.querySelector('.post-delete');
+    const editBtn = postEl.querySelector('.post-edit');
+    const menuBtn = postEl.querySelector('.post-menu-btn');
+    const menuDropdown = postEl.querySelector('.post-menu-dropdown');
+    
+    // Toggle menu dropdown
+    menuBtn && menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+            if (dropdown !== menuDropdown) {
+                dropdown.style.display = 'none';
+            }
+        });
+        menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    likeBtn && likeBtn.addEventListener('click', () => {
+        post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
+        post._liked = !post._liked;
+        saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+    });
+
+    bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
+        post.bookmarked = !post.bookmarked;
+        saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+    });
+
+    shareBtn && shareBtn.addEventListener('click', () => {
+        post.shares = (post.shares || 0) + 1;
+        saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+        alert('Post shared (simulated)');
+    });
+
+    deleteBtn && deleteBtn.addEventListener('click', () => {
+        menuDropdown.style.display = 'none';
+        if (!confirm('Delete this post?')) return;
+        const i = postsArr.findIndex(p => p.id === post.id);
+        if (i > -1) {
+            postsArr.splice(i, 1);
+            savePostsToStorage(postsArr);
+            postEl.remove();
+            updateHomeProfile();
+        }
+    });
+
+    editBtn && editBtn.addEventListener('click', () => {
+        menuDropdown.style.display = 'none';
+        if (content.classList.contains('editing')) return;
+        content.classList.add('editing');
+        const captionEl = content.querySelector('.post-caption');
+        const current = captionEl ? captionEl.textContent : '';
+        const ta = document.createElement('textarea');
+        ta.value = current;
+        content.insertBefore(ta, content.firstChild);
+        if (captionEl) captionEl.style.display = 'none';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn btn-small';
+        saveBtn.textContent = 'Save';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-small';
+        cancelBtn.style.marginLeft = '6px';
+        cancelBtn.textContent = 'Cancel';
+        content.appendChild(saveBtn);
+        content.appendChild(cancelBtn);
+
+        saveBtn.addEventListener('click', () => {
+            post.caption = ta.value.trim();
+            saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
+            content.classList.remove('editing');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            if (captionEl) captionEl.style.display = '';
+            ta.remove();
+            saveBtn.remove();
+            cancelBtn.remove();
+            content.classList.remove('editing');
+        });
+    });
+
+    function saveAndRefreshGlobal(id, postsArr, postEl, post, likeBtn, bookmarkBtn) {
+        const idx = postsArr.findIndex(p => p.id === id);
+        if (idx > -1) postsArr[idx] = post;
+        savePostsToStorage(postsArr);
+        
+        const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
+        if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-thumbs-up"></i> ${post.likes} likes`;
+        if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like';
+        if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+        
+        const cap = postEl.querySelector('.post-caption');
+        if (cap) cap.innerHTML = escapeHtml(post.caption || '');
+    }
+}
+
+function timeAgoShort(iso) {
+    try {
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return `${mins}m`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h`;
+        const days = Math.floor(hrs / 24);
+        return `${days}d`;
+    } catch (e) {
+        return '';
+    }
+}
+
+function escapeHtml(text) {
+    return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
+}
+
+function savePostsToStorage(postsArr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
+    window.dispatchEvent(new Event('postsUpdated'));
+}
+
+function loadPostsFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// ========== TOAST NOTIFICATION SYSTEM ==========
+function showToast(message, type = 'info', duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.style.animation = 'slideUp 0.3s ease-out';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check user session first
@@ -203,7 +446,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load and render stored posts
     const posts = loadPostsFromStorage();
-    renderAllPosts(posts);
+    if (postsContainer) {
+        renderAllPosts(posts);
+    }
 
     imageInput && imageInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files || []);
@@ -235,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         posts.unshift(post);
         savePostsToStorage(posts);
-        renderPost(post, postsContainer, posts);
+        renderPostGlobal(post, postsContainer, posts, loadProfile()?.profilePicture || DEFAULT_AVATAR_URL);
         
         // Dispatch event to update profile page if it's open
         console.log('Dispatching postsUpdated event');
@@ -310,204 +555,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
         // Dispatch event to update profile page if it's open
         window.dispatchEvent(new Event('postsUpdated'));
-    }
-
-    // Rendering
-    function renderAllPosts(postsArr) {
-        postsContainer.innerHTML = '';
-        // Sort posts by time (newest first)
-        const sortedPosts = [...postsArr].sort((a, b) => {
-            const timeA = new Date(a.time || 0).getTime();
-            const timeB = new Date(b.time || 0).getTime();
-            return timeB - timeA; // Descending order (newest first)
-        });
-        sortedPosts.forEach(post => renderPost(post, postsContainer, postsArr));
-    }
-
-    function renderPost(post, container, postsArr) {
-        const postEl = document.createElement('div');
-        postEl.className = 'post';
-        postEl.dataset.id = post.id;
-
-        // Get profile picture for avatar
-        const profile = loadProfile();
-        const profilePicture = (profile && profile.profilePicture) ? profile.profilePicture : DEFAULT_AVATAR_URL;
-
-        const header = document.createElement('div');
-        header.className = 'post-header';
-        header.innerHTML = `
-            <img src="${profilePicture}" alt="User Avatar" class="avatar-sm">
-            <div class="post-info">
-                <h4>You</h4>
-                <span class="post-time">${timeAgoShort(post.time)}</span>
-            </div>
-            <div class="post-menu-container" style="position: relative;">
-                <button class="post-menu-btn" title="More options">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <div class="post-menu-dropdown" style="display: none;">
-                    <button class="post-menu-item post-edit">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="post-menu-item post-delete">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            </div>
-        `;
-
-        const content = document.createElement('div');
-        content.className = 'post-content';
-        if (post.caption) content.innerHTML = `<p class="post-caption">${escapeHtml(post.caption)}</p>`;
-
-        if (post.images && post.images.length) {
-            post.images.forEach(src => {
-                const img = document.createElement('img');
-                img.className = 'post-image';
-                img.src = src;
-                content.appendChild(img);
-            });
-        }
-
-        const stats = document.createElement('div');
-        stats.className = 'post-stats';
-        stats.innerHTML = `<span class="likes"><i class="fas fa-thumbs-up"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-paper-plane"></i> ${post.shares} shares</span>`;
-
-        const actions = document.createElement('div');
-        actions.className = 'post-actions';
-        actions.innerHTML = `
-            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like'}</button>
-            <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
-            <button class="action-share action-btn"><i class="far fa-paper-plane"></i> Share</button>
-        `;
-
-        postEl.appendChild(header);
-        postEl.appendChild(content);
-        postEl.appendChild(stats);
-        postEl.appendChild(actions);
-
-        container.insertAdjacentElement('afterbegin', postEl);
-
-        // handlers
-        const likeBtn = postEl.querySelector('.action-like');
-        const bookmarkBtn = postEl.querySelector('.action-bookmark');
-        const shareBtn = postEl.querySelector('.action-share');
-        const deleteBtn = postEl.querySelector('.post-delete');
-        const editBtn = postEl.querySelector('.post-edit');
-        const menuBtn = postEl.querySelector('.post-menu-btn');
-        const menuDropdown = postEl.querySelector('.post-menu-dropdown');
-        const menuContainer = postEl.querySelector('.post-menu-container');
-        
-        // Toggle menu dropdown
-        menuBtn && menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Close all other menus first
-            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
-                if (dropdown !== menuDropdown) {
-                    dropdown.style.display = 'none';
-                }
-            });
-            // Toggle current menu
-            menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
-        });
-
-        likeBtn && likeBtn.addEventListener('click', () => {
-            post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
-            post._liked = !post._liked;
-            saveAndRefresh(post.id);
-        });
-
-        bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
-            post.bookmarked = !post.bookmarked;
-            saveAndRefresh(post.id);
-        });
-
-        shareBtn && shareBtn.addEventListener('click', () => {
-            post.shares = (post.shares || 0) + 1;
-            saveAndRefresh(post.id);
-            alert('Post shared (simulated)');
-        });
-
-        deleteBtn && deleteBtn.addEventListener('click', () => {
-            menuDropdown.style.display = 'none';
-            if (!confirm('Delete this post?')) return;
-            const i = postsArr.findIndex(p => p.id === post.id);
-            if (i > -1) {
-                postsArr.splice(i, 1);
-                savePostsToStorage(postsArr);
-                postEl.remove();
-            }
-        });
-
-        editBtn && editBtn.addEventListener('click', () => {
-            menuDropdown.style.display = 'none';
-            if (content.classList.contains('editing')) return;
-            content.classList.add('editing');
-            const captionEl = content.querySelector('.post-caption');
-            const current = captionEl ? captionEl.textContent : '';
-            const ta = document.createElement('textarea');
-            ta.value = current;
-            content.insertBefore(ta, content.firstChild);
-            if (captionEl) captionEl.style.display = 'none';
-
-            const saveBtn = document.createElement('button');
-            saveBtn.className = 'btn btn-small';
-            saveBtn.textContent = 'Save';
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'btn btn-small';
-            cancelBtn.style.marginLeft = '6px';
-            cancelBtn.textContent = 'Cancel';
-            content.appendChild(saveBtn);
-            content.appendChild(cancelBtn);
-
-            saveBtn.addEventListener('click', () => {
-                post.caption = ta.value.trim();
-                saveAndRefresh(post.id);
-                content.classList.remove('editing');
-            });
-
-            cancelBtn.addEventListener('click', () => {
-                if (captionEl) captionEl.style.display = '';
-                ta.remove();
-                saveBtn.remove();
-                cancelBtn.remove();
-                content.classList.remove('editing');
-            });
-        });
-
-        function saveAndRefresh(id) {
-            const idx = postsArr.findIndex(p => p.id === id);
-            if (idx > -1) postsArr[idx] = post;
-            savePostsToStorage(postsArr);
-            // update UI pieces
-            const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
-            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-thumbs-up"></i> ${post.likes} likes`;
-            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like';
-            if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
-            // caption refresh
-            const cap = postEl.querySelector('.post-caption');
-            if (cap) cap.innerHTML = escapeHtml(post.caption || '');
-        }
-
-    }
-
-    function timeAgoShort(iso) {
-        try {
-            const diff = Date.now() - new Date(iso).getTime();
-            const mins = Math.floor(diff / 60000);
-            if (mins < 1) return 'just now';
-            if (mins < 60) return `${mins}m`;
-            const hrs = Math.floor(mins / 60);
-            if (hrs < 24) return `${hrs}h`;
-            const days = Math.floor(hrs / 24);
-            return `${days}d`;
-        } catch (e) {
-            return '';
-        }
-    }
-
-    function escapeHtml(text) {
-        return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
     }
 
 });

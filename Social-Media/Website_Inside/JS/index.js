@@ -252,7 +252,31 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedImages = [];
         renderThumbs();
         if (captionInput) captionInput.value = '';
-        if (imageInput) imageInput.value = ''; // Reset file input to allow selecting same file again
+        // Reset file input - create a new input element to allow same file selection
+        if (imageInput) {
+            const newInput = imageInput.cloneNode(true);
+            imageInput.parentNode.replaceChild(newInput, imageInput);
+            // Re-attach event listener to new input
+            newInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                const readers = files.map(file => fileToDataURL(file));
+                Promise.all(readers).then(dataUrls => {
+                    selectedImages.push(...dataUrls);
+                    renderThumbs();
+                });
+            });
+            // Update reference to imageInput
+            document.getElementById('post-image').addEventListener('change', (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                const readers = files.map(file => fileToDataURL(file));
+                Promise.all(readers).then(dataUrls => {
+                    selectedImages.push(...dataUrls);
+                    renderThumbs();
+                });
+            });
+        }
     });
 
     clearPostsBtn && clearPostsBtn.addEventListener('click', () => {

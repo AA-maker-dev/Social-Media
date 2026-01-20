@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/styles.css">
+    <link rel="stylesheet" href="../CSS/explore.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Nexora - Explore</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-network-wired"></i> Nexora
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="explore.html" class="nav-link active">Explore</a></li>
+                <li><a href="messages.html" class="nav-link">Messages</a></li>
+                <li><a href="notifications.html" class="nav-link">Notifications</a></li>
+                <li><a href="profile.html" class="nav-link">Profile</a></li>
+                <li><a href="#" onclick="logout(event)" class="nav-link" style="color: #E0245E;">Logout</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="explore-content">
+        <div class="explore-header">
+            <h1><i class="fas fa-compass"></i> Explore</h1>
+            <p>Discover trending posts, topics, and people</p>
+        </div>
+
+        <section id="trending-posts" class="explore-section">
+            <h2><i class="fas fa-fire"></i> Trending Posts</h2>
+            <div class="posts-container">
+                <div class="explore-post-card">
+                    <div class="post-image-wrapper">
+                        <img src="https://picsum.photos/300/200?random=1" alt="Random Post Image 1">
+                        <div class="post-overlay">
+                            <button class="post-action-btn"><i class="fas fa-thumbs-up"></i> 2.5K</button>
+                            <button class="post-action-btn"><i class="fas fa-paper-plane"></i> 1.2K</button>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <h3>Exciting New Tech Gadget</h3>
+                        <p>Check out this innovative device that's taking the world by storm! #TechTrends</p>
+                        <div class="post-tags">
+                            <span class="tag">#TechTrends</span>
+                            <span class="tag">#Innovation</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="explore-post-card">
+                    <div class="post-image-wrapper">
+                        <img src="https://picsum.photos/300/200?random=2" alt="Random Post Image 2">
+                        <div class="post-overlay">
+                            <button class="post-action-btn"><i class="fas fa-thumbs-up"></i> 1.8K</button>
+                            <button class="post-action-btn"><i class="fas fa-paper-plane"></i> 890</button>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <h3>Adventure in the Mountains</h3>
+                        <p>A breathtaking hike through the peaks. Nature at its finest! #OutdoorLife</p>
+                        <div class="post-tags">
+                            <span class="tag">#OutdoorLife</span>
+                            <span class="tag">#Adventure</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="explore-post-card">
+                    <div class="post-image-wrapper">
+                        <img src="https://picsum.photos/300/200?random=3" alt="Random Post Image 3">
+                        <div class="post-overlay">
+                            <button class="post-action-btn"><i class="fas fa-thumbs-up"></i> 3.2K</button>
+                            <button class="post-action-btn"><i class="fas fa-paper-plane"></i> 1.5K</button>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <h3>Culinary Delights</h3>
+                        <p>Trying out fusion recipes that blend cultures. Yum! #Foodie</p>
+                        <div class="post-tags">
+                            <span class="tag">#Foodie</span>
+                            <span class="tag">#Cooking</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="explore-post-card">
+                    <div class="post-image-wrapper">
+                        <img src="https://picsum.photos/300/200?random=4" alt="Random Post Image 4">
+                        <div class="post-overlay">
+                            <button class="post-action-btn"><i class="fas fa-thumbs-up"></i> 2.1K</button>
+                            <button class="post-action-btn"><i class="fas fa-paper-plane"></i> 950</button>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <h3>Urban Art Scene</h3>
+                        <p>Street art transforming city walls into canvases. #ArtLovers</p>
+                        <div class="post-tags">
+                            <span class="tag">#ArtLovers</span>
+                            <span class="tag">#StreetArt</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="explore-post-card">
+                    <div class="post-image-wrapper">
+                        <img src="https://picsum.photos/300/200?random=5" alt="Random Post Image 5">
+                        <div class="post-overlay">
+                            <button class="post-action-btn"><i class="fas fa-thumbs-up"></i> 4.5K</button>
+                            <button class="post-action-btn"><i class="fas fa-paper-plane"></i> 2.3K</button>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <h3>Space Exploration Update</h3>
+                        <p>Latest discoveries from Mars missions. The future is here! #Space</p>
+                        <div class="post-tags">
+                            <span class="tag">#Space</span>
+                            <span class="tag">#Science</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="trending-topics" class="explore-section">
+            <h2><i class="fas fa-hashtag"></i> Trending Topics</h2>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-robot"></i></div>
+                    <h3>#AIRevolution</h3>
+                    <p>Discussions on artificial intelligence advancements</p>
+                    <span class="topic-count">45K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-leaf"></i></div>
+                    <h3>#SustainableLiving</h3>
+                    <p>Tips for eco-friendly lifestyles</p>
+                    <span class="topic-count">32K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-dumbbell"></i></div>
+                    <h3>#FitnessChallenges</h3>
+                    <p>Join the latest workout trends</p>
+                    <span class="topic-count">28K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-book"></i></div>
+                    <h3>#BookTok</h3>
+                    <p>Must-read books and literary buzz</p>
+                    <span class="topic-count">67K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-plane"></i></div>
+                    <h3>#TravelHacks</h3>
+                    <p>Insider tips for globetrotters</p>
+                    <span class="topic-count">54K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-music"></i></div>
+                    <h3>#MusicFestivals</h3>
+                    <p>Upcoming events and artist spotlights</p>
+                    <span class="topic-count">38K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-gamepad"></i></div>
+                    <h3>#GamingNews</h3>
+                    <p>Latest releases and esports updates</p>
+                    <span class="topic-count">92K posts</span>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon"><i class="fas fa-heart"></i></div>
+                    <h3>#MentalHealthMatters</h3>
+                    <p>Resources and community support</p>
+                    <span class="topic-count">41K posts</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="trending-people" class="explore-section">
+            <h2><i class="fas fa-users"></i> Trending People</h2>
+            <div class="people-container">
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <img src="https://picsum.photos/100/100?random=6" alt="Profile Image 1">
+                        <span class="verified-badge"><i class="fas fa-check-circle"></i></span>
+                    </div>
+                    <div class="person-info">
+                        <h4>Alex Rivera</h4>
+                        <p class="person-handle">@alexrivera</p>
+                        <p class="person-bio">Tech Innovator | Follow for daily tech insights.</p>
+                        <div class="person-stats">
+                            <span><strong>125K</strong> Followers</span>
+                        </div>
+                        <button class="btn-follow">Follow</button>
+                    </div>
+                </div>
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <img src="https://picsum.photos/100/100?random=7" alt="Profile Image 2">
+                        <span class="verified-badge"><i class="fas fa-check-circle"></i></span>
+                    </div>
+                    <div class="person-info">
+                        <h4>Sara Chen</h4>
+                        <p class="person-handle">@sarachen</p>
+                        <p class="person-bio">Adventure Photographer | Exploring the world one shot at a time.</p>
+                        <div class="person-stats">
+                            <span><strong>89K</strong> Followers</span>
+                        </div>
+                        <button class="btn-follow">Follow</button>
+                    </div>
+                </div>
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <img src="https://picsum.photos/100/100?random=8" alt="Profile Image 3">
+                    </div>
+                    <div class="person-info">
+                        <h4>Mike Johnson</h4>
+                        <p class="person-handle">@mikejohnson</p>
+                        <p class="person-bio">Chef Extraordinaire | Recipes that inspire.</p>
+                        <div class="person-stats">
+                            <span><strong>67K</strong> Followers</span>
+                        </div>
+                        <button class="btn-follow">Follow</button>
+                    </div>
+                </div>
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <img src="https://picsum.photos/100/100?random=9" alt="Profile Image 4">
+                    </div>
+                    <div class="person-info">
+                        <h4>Lena Gupta</h4>
+                        <p class="person-handle">@lenagupta</p>
+                        <p class="person-bio">Art Enthusiast | Sharing creative journeys.</p>
+                        <div class="person-stats">
+                            <span><strong>103K</strong> Followers</span>
+                        </div>
+                        <button class="btn-follow">Follow</button>
+                    </div>
+                </div>
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <img src="https://picsum.photos/100/100?random=10" alt="Profile Image 5">
+                        <span class="verified-badge"><i class="fas fa-check-circle"></i></span>
+                    </div>
+                    <div class="person-info">
+                        <h4>Dr. Ethan Lee</h4>
+                        <p class="person-handle">@ethanlee</p>
+                        <p class="person-bio">Space Scientist | Updates on cosmic discoveries.</p>
+                        <div class="person-stats">
+                            <span><strong>156K</strong> Followers</span>
+                        </div>
+                        <button class="btn-follow">Follow</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main> 
+
+    <script src="../JS/explore.js"></script>
+</body>
+</html>

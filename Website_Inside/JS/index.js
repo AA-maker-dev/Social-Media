@@ -661,42 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('🗑️ All posts cleared!', 'info', 2000);
     });
 
-    // ========== FILTER FUNCTIONALITY ==========
-    const filterSelect = document.getElementById('filterPosts');
-    const clearFilterBtn = document.getElementById('clearFilter');
-
-    function filterPosts() {
-        const filterType = filterSelect?.value || 'all';
-        
-        let filtered = [...posts];
-
-        // Filter by type
-        if (filterType === 'liked') {
-            filtered = filtered.filter(p => p._liked);
-        } else if (filterType === 'bookmarked') {
-            filtered = filtered.filter(p => p.bookmarked);
-        }
-
-        // Render filtered posts
-        postsContainer.innerHTML = '';
-        if (filtered.length === 0) {
-            postsContainer.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--gray-color); font-size: 16px;">📭 No posts found!</div>';
-            return;
-        }
-
-        filtered.forEach(post => {
-            renderPostGlobal(post, postsContainer, posts, loadProfile()?.profilePicture || DEFAULT_AVATAR_URL);
-        });
-    }
-
-    filterSelect && filterSelect.addEventListener('change', filterPosts);
-    
-    clearFilterBtn && clearFilterBtn.addEventListener('click', () => {
-        if (filterSelect) filterSelect.value = 'all';
-        renderAllPostsGlobal(posts);
-        showToast('🔄 Filter cleared!', 'info', 1500);
-    });
-
     function renderThumbs() {
         if (!thumbsContainer) return;
         thumbsContainer.innerHTML = '';

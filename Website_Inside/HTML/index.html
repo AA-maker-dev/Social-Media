@@ -97,7 +97,7 @@
                     
                     <!-- Image Upload Row -->
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <label for="post-image" class="upload-btn">
+                        <label for="post-image" class="btn btn-secondary" style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fas fa-image"></i> Add Image
                         </label>
                         <input type="file" id="post-image" accept="image/*" style="display:none;">
@@ -114,18 +114,8 @@
             </div>
 
             <!-- Posts Container -->
-            <div id="posts-container">
+            <div id="posts-container" style="padding: 0 12px;">
                 <!-- Posts will be dynamically loaded here -->
-            </div>
-
-            <!-- Filter Section -->
-            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6)); border-radius: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.6);">
-                <select id="filterPosts" style="padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 24px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; background: white;">
-                    <option value="all">🎯 All Posts</option>
-                    <option value="liked">❤️ Liked Posts</option>
-                    <option value="bookmarked">🔖 Saved Posts</option>
-                </select>
-                <button id="clearFilter" class="btn btn-secondary" style="padding: 10px 20px; font-weight: 600;">🔄 Clear</button>
             </div>
 
             <!-- Loading Indicator -->

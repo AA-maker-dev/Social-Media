@@ -128,15 +128,6 @@ function updateHomeProfile() {
     if (postCreatorAvatar) {
         postCreatorAvatar.src = profilePicture;
     }
-        const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
-        if (sidebarAvatar) {
-            sidebarAvatar.src = profilePicture;
-        }
-        const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
-        if (postCreatorAvatar) {
-            postCreatorAvatar.src = profilePicture;
-        }
-    }
 }
 
 // Helper function to load posts (accessible globally)
@@ -320,18 +311,18 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
     const menuDropdown = postEl.querySelector('.post-menu-dropdown');
     
     // Comment handlers
-    const toggleCommentsBtn = postEl.querySelector('.toggle-comments-btn');
-    const commentsSection = postEl.querySelector('.post-comments-section');
-    const commentsContainer = postEl.querySelector('.comments-container');
+    const toggleCommentsBtnHandler = postEl.querySelector('.toggle-comments-btn');
+    const commentsSectionHandler = postEl.querySelector('.post-comments-section');
+    const commentsContainerHandler = postEl.querySelector('.comments-container');
     const submitCommentBtn = postEl.querySelector('.comment-submit-btn');
     const commentInputField = postEl.querySelector('.comment-input');
 
     // Render existing comments
     function renderComments() {
-        commentsContainer.innerHTML = '';
+        commentsContainerHandler.innerHTML = '';
         const comments = post.comments || [];
         if (comments.length === 0) {
-            commentsContainer.innerHTML = '<div style="text-align: center; color: var(--gray-color); font-size: 12px; padding: 10px;">No comments yet. Be the first!</div>';
+            commentsContainerHandler.innerHTML = '<div style="text-align: center; color: var(--gray-color); font-size: 12px; padding: 10px;">No comments yet. Be the first!</div>';
             return;
         }
         
@@ -346,16 +337,16 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
                     <div class="comment-time">${timeAgoShort(comment.time)}</div>
                 </div>
             `;
-            commentsContainer.appendChild(commentEl);
+            commentsContainerHandler.appendChild(commentEl);
         });
     }
 
     renderComments();
 
     // Toggle comments visibility
-    toggleCommentsBtn && toggleCommentsBtn.addEventListener('click', () => {
-        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
-        if (commentsSection.style.display === 'block') {
+    toggleCommentsBtnHandler && toggleCommentsBtnHandler.addEventListener('click', () => {
+        commentsSectionHandler.style.display = commentsSectionHandler.style.display === 'none' ? 'block' : 'none';
+        if (commentsSectionHandler.style.display === 'block') {
             renderComments();
         }
     });
@@ -377,7 +368,7 @@ function renderPostGlobal(post, container, postsArr, profilePicture) {
         saveAndRefreshGlobal(post.id, postsArr, postEl, post, likeBtn, bookmarkBtn);
         
         // Update comment button
-        toggleCommentsBtn.textContent = `💬 ${post.comments.length} Comments`;
+        toggleCommentsBtnHandler.textContent = `💬 ${post.comments.length} Comments`;
         
         // Clear input and re-render
         commentInputField.value = '';

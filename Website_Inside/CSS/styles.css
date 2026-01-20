@@ -1604,3 +1604,101 @@ a, button, input, label {
 .toggle-comments-btn:hover {
     background: rgba(29, 161, 242, 0.15);
 }
+
+/* ========== SEARCH AND FILTER STYLING ========== */
+
+#searchPosts {
+    transition: var(--transition);
+}
+
+#searchPosts:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 12px rgba(29, 161, 242, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+#filterPosts {
+    background: white;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+#filterPosts:hover,
+#filterPosts:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 12px rgba(29, 161, 242, 0.2);
+}
+
+#filterPosts option {
+    padding: 8px;
+}
+
+#clearFilter {
+    transition: var(--transition);
+}
+
+#clearFilter:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray-color);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .post {
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    .post-header {
+        gap: 10px;
+    }
+
+    .post-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .sidebar-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .suggestion {
+        padding: 10px;
+    }
+
+    .comment {
+        padding: 8px;
+    }
+
+    .comment-input {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .toggle-comments-btn {
+        width: 100%;
+    }
+}

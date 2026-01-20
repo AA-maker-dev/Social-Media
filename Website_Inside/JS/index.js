@@ -535,6 +535,54 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem(STORAGE_KEY);
         posts.length = 0;
         postsContainer.innerHTML = '';
+        showToast('🗑️ All posts cleared!', 'info', 2000);
+    });
+
+    // ========== SEARCH AND FILTER FUNCTIONALITY ==========
+    const searchInput = document.getElementById('searchPosts');
+    const filterSelect = document.getElementById('filterPosts');
+    const clearFilterBtn = document.getElementById('clearFilter');
+
+    function filterAndSearchPosts() {
+        const searchTerm = (searchInput?.value || '').toLowerCase();
+        const filterType = filterSelect?.value || 'all';
+        
+        let filtered = [...posts];
+
+        // Filter by type
+        if (filterType === 'liked') {
+            filtered = filtered.filter(p => p._liked);
+        } else if (filterType === 'bookmarked') {
+            filtered = filtered.filter(p => p.bookmarked);
+        }
+
+        // Search by caption
+        if (searchTerm) {
+            filtered = filtered.filter(p => 
+                (p.caption || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Render filtered posts
+        postsContainer.innerHTML = '';
+        if (filtered.length === 0) {
+            postsContainer.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--gray-color); font-size: 16px;">📭 No posts found. Try a different search or filter!</div>';
+            return;
+        }
+
+        filtered.forEach(post => {
+            renderPostGlobal(post, postsContainer, posts, loadProfile()?.profilePicture || DEFAULT_AVATAR_URL);
+        });
+    }
+
+    searchInput && searchInput.addEventListener('input', filterAndSearchPosts);
+    filterSelect && filterSelect.addEventListener('change', filterAndSearchPosts);
+    
+    clearFilterBtn && clearFilterBtn.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        if (filterSelect) filterSelect.value = 'all';
+        renderAllPostsGlobal(posts);
+        showToast('🔄 Filter cleared!', 'info', 1500);
     });
 
     function renderThumbs() {

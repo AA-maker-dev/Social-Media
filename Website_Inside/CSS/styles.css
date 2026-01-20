@@ -1483,3 +1483,124 @@ a, button, input, label {
         max-width: 100%;
     }
 }
+
+/* ========== COMMENT SYSTEM STYLES ========== */
+
+.post-comments-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.comments-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.comment {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(29, 161, 242, 0.05);
+    transition: var(--transition);
+    animation: slideDown 0.3s ease-out;
+}
+
+.comment:hover {
+    background: rgba(29, 161, 242, 0.1);
+}
+
+.comment .avatar-sm {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 12px;
+}
+
+.comment-text {
+    font-size: 13px;
+    color: var(--secondary-color);
+    margin-top: 4px;
+    word-break: break-word;
+}
+
+.comment-time {
+    font-size: 11px;
+    color: var(--gray-color);
+    margin-top: 4px;
+}
+
+.comment-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 12px;
+}
+
+.comment-input {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 8px 14px;
+    font-size: 13px;
+    resize: none;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.comment-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(29, 161, 242, 0.2);
+    outline: none;
+}
+
+.comment-submit-btn {
+    padding: 8px 14px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.comment-submit-btn:hover {
+    background: #1a91da;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.comment-submit-btn:active {
+    transform: translateY(0);
+}
+
+.toggle-comments-btn {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--primary-color);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 12px;
+}
+
+.toggle-comments-btn:hover {
+    background: rgba(29, 161, 242, 0.15);
+}

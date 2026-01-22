@@ -76,6 +76,9 @@ const POSTS_STORAGE_KEY = 'nexora_posts_v1';
 // Default avatar URL
 const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
 
+// Default cover image (gradient)
+const DEFAULT_COVER_IMAGE = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
 // Sample profile data
 const defaultProfile = {
     name: 'Tester',
@@ -89,7 +92,8 @@ const defaultProfile = {
     followers: '2.5K',
     following: '842',
     posts: '0',
-    profilePicture: null
+    profilePicture: null,
+    coverImage: null
 };
 
 // Sample photos
@@ -222,6 +226,18 @@ function renderProfile() {
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
         profileAvatar.src = profile.profilePicture || DEFAULT_AVATAR_URL;
+    }
+    
+    // Update cover image
+    const coverImage = document.getElementById('coverImage');
+    if (coverImage) {
+        if (profile.coverImage) {
+            coverImage.style.background = `url('${profile.coverImage}') center/cover no-repeat`;
+            coverImage.style.backgroundSize = 'cover';
+            coverImage.style.backgroundPosition = 'center';
+        } else {
+            coverImage.style.background = DEFAULT_COVER_IMAGE;
+        }
     }
 }
 
@@ -462,10 +478,50 @@ function setupEventListeners() {
         avatarFileInput.click();
     });
     
-    // Cover edit
+    // Cover edit - create hidden file input
     const coverEditBtn = document.getElementById('coverEditBtn');
+    const coverFileInput = document.createElement('input');
+    coverFileInput.type = 'file';
+    coverFileInput.accept = 'image/*';
+    coverFileInput.style.display = 'none';
+    document.body.appendChild(coverFileInput);
+    
+    coverFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
+        }
+        
+        // Validate file size (max 10MB for cover)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Image size should be less than 10MB.');
+            return;
+        }
+        
+        // Convert to data URL
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataURL = event.target.result;
+            profile.coverImage = dataURL;
+            saveProfile();
+            renderProfile();
+            showNotification('Cover image updated successfully!', 'success');
+        };
+        reader.onerror = () => {
+            alert('Error reading image file. Please try again.');
+        };
+        reader.readAsDataURL(file);
+        
+        // Reset input
+        coverFileInput.value = '';
+    });
+    
     coverEditBtn.addEventListener('click', () => {
-        alert('Cover photo upload feature coming soon!');
+        coverFileInput.click();
     });
     
     // Share profile
@@ -483,10 +539,17 @@ function setupEventListeners() {
         }
     });
     
-    // More options
+    // More options (remove cover image)
     const moreOptionsBtn = document.getElementById('moreOptionsBtn');
     moreOptionsBtn.addEventListener('click', () => {
-        alert('More options coming soon!');
+        if (profile.coverImage && confirm('Remove current cover image?')) {
+            profile.coverImage = null;
+            saveProfile();
+            renderProfile();
+            showNotification('Cover image removed!', 'success');
+        } else if (!profile.coverImage) {
+            alert('No cover image to remove. Click the camera icon to add one!');
+        }
     });
 }
 

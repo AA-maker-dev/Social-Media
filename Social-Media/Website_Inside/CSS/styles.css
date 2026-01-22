@@ -5,7 +5,7 @@
 }
 
 :root {
-    --primary-color: #1DA1F2;
+    --primary-color: #ff7f07;
     --secondary-color: #14171A;
     --light-color: #F7F9FA;
     --gray-color: #657786;
@@ -45,7 +45,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff7f07);
     color: white;
     width: 100%;
     margin-top: 15px;
@@ -75,7 +75,7 @@ body {
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff7f07);
     color: white;
     padding: 10px 16px;
     box-shadow: var(--shadow-sm);
@@ -128,7 +128,7 @@ body {
 
 .logo:hover {
     transform: scale(1.05);
-    color: #1a91da;
+    color: ff7f07;
 }
 
 .logo i {
@@ -241,7 +241,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 15px;
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff7f07);
     border: 3px solid white;
     box-shadow: var(--shadow-md);
     transition: var(--transition);
@@ -258,7 +258,7 @@ body {
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff7f07);
     border: 2px solid white;
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
@@ -577,7 +577,7 @@ body {
     top: 0;
     width: 4px;
     height: 0;
-    background: linear-gradient(180deg, var(--primary-color), #1a91da);
+    background: linear-gradient(180deg, var(--primary-color), #ff7f07);
     transition: var(--transition);
 }
 

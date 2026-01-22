@@ -6,6 +6,17 @@
     <link rel="stylesheet" href="../CSS/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>SocialHub - Connect & Share</title>
+    <script>
+        // Hide logout button before page renders on non-profile pages
+        if (!window.location.pathname.includes('profile.html')) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const logoutBtn = document.getElementById('logoutNavItem');
+                const loginBtn = document.getElementById('authNavItem');
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (loginBtn && localStorage.getItem('userSession')) loginBtn.style.display = 'none';
+            });
+        }
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -30,8 +41,13 @@
             </div>
         </div>
     </nav>
-
-    <!-- Main Container -->
+    <script>
+        // Hide logout button immediately on non-profile pages
+        if (!window.location.pathname.includes('profile.html')) {
+            const logoutBtn = document.getElementById('logoutNavItem');
+            if (logoutBtn) logoutBtn.style.display = 'none';
+        }
+    </script>
     <div class="main-container">
         <!-- Sidebar -->
         <aside class="sidebar">

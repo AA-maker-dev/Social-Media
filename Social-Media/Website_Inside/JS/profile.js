@@ -69,9 +69,34 @@ if (hamburger) {
     });
 }
 
+// Get current user session
+function getUserSession() {
+    try {
+        const userSession = localStorage.getItem('userSession');
+        return userSession ? JSON.parse(userSession) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+// Get user-specific storage key based on email
+function getUserProfileStorageKey(email) {
+    return `nexora_profile_${email}`;
+}
+
 // Profile functionality
-const STORAGE_KEY = 'nexora_profile_v1';
 const POSTS_STORAGE_KEY = 'nexora_posts_v1';
+
+// Get STORAGE_KEY based on current user
+function getStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.email) {
+        return getUserProfileStorageKey(userSession.email);
+    }
+    return 'nexora_profile_default';
+}
+
+const STORAGE_KEY = getStorageKey();
 
 // Default avatar URL
 const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
@@ -166,15 +191,38 @@ document.addEventListener('DOMContentLoaded', () => {
 // Storage functions
 function loadProfile() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
+        const userSession = getUserSession();
+        const storageKey = getStorageKey();
+        const raw = localStorage.getItem(storageKey);
+        const profile = raw ? JSON.parse(raw) : {};
+        
+        // If no profile exists, create default one with session data
+        if (Object.keys(profile).length === 0 && userSession) {
+            return {
+                name: userSession.name || 'User',
+                username: userSession.username || '@user',
+                bio: 'Welcome to my profile! 👋',
+                work: 'Not specified',
+                education: 'Not specified',
+                location: 'Not specified',
+                website: 'www.example.com',
+                joined: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+                followers: '0',
+                following: '0',
+                posts: '0',
+                profilePicture: null,
+                coverImage: null
+            };
+        }
+        return profile;
     } catch (e) {
         return {};
     }
 }
 
 function saveProfile() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    const storageKey = getStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify(profile));
 }
 
 // Load posts from storage
@@ -209,8 +257,23 @@ function updatePostsCount() {
 
 // Render profile
 function renderProfile() {
-    document.getElementById('profileName').textContent = profile.name;
-    document.getElementById('profileUsername').textContent = profile.username;
+    // Load current user session to get their name and username
+    const userSessionData = localStorage.getItem('userSession');
+    let displayName = profile.name;
+    let displayUsername = profile.username;
+    
+    if (userSessionData) {
+        try {
+            const userSession = JSON.parse(userSessionData);
+            displayName = userSession.name || profile.name;
+            displayUsername = userSession.username || profile.username;
+        } catch (e) {
+            console.error('Error loading user session:', e);
+        }
+    }
+    
+    document.getElementById('profileName').textContent = displayName;
+    document.getElementById('profileUsername').textContent = displayUsername;
     document.getElementById('profileBio').textContent = profile.bio;
     document.getElementById('followersCount').textContent = profile.followers;
     document.getElementById('followingCount').textContent = profile.following;

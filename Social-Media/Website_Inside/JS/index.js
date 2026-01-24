@@ -82,12 +82,25 @@ if (hamburger) {
 }
 
 // Profile data sync
-const PROFILE_STORAGE_KEY = 'nexora_profile_v1';
+// Get user-specific profile storage key
+function getUserProfileStorageKey(email) {
+    return `nexora_profile_${email}`;
+}
+
+function getProfileStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.email) {
+        return getUserProfileStorageKey(userSession.email);
+    }
+    return 'nexora_profile_default';
+}
+
 const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
 
 function loadProfile() {
     try {
-        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        const storageKey = getProfileStorageKey();
+        const raw = localStorage.getItem(storageKey);
         return raw ? JSON.parse(raw) : null;
     } catch (e) {
         return null;
@@ -147,6 +160,124 @@ function updateHomeProfile() {
 }
 
 // Helper function to load posts (accessible globally)
+// ===============================================
+// REACTIONS MANAGEMENT & DISPLAY
+// ===============================================
+
+function showReactionsBreakdown(reactions) {
+    const reactionEmojiMap = {
+        'like': { emoji: '👍', name: 'Like' },
+        'love': { emoji: '❤️', name: 'Love' },
+        'wow': { emoji: '😮', name: 'Wow' },
+        'heartEyes': { emoji: '😍', name: 'Love It' },
+        'party': { emoji: '🎉', name: 'Celebrate' },
+        'fire': { emoji: '🔥', name: 'Fire' }
+    };
+
+    let modal = document.getElementById('reactions-modal');
+    
+    // Create modal if it doesn't exist
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'reactions-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Build breakdown content
+    let breakdownHtml = '';
+    let totalCount = 0;
+    
+    Object.entries(reactions).forEach(([type, count]) => {
+        if (count > 0) {
+            const info = reactionEmojiMap[type] || { emoji: '👍', name: 'Like' };
+            breakdownHtml += `
+                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #e1e8ed;">
+                    <span style="font-size: 28px; margin-right: 15px; min-width: 40px;">${info.emoji}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #14171a;">${info.name}</div>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 600; color: #ff7f07; min-width: 40px; text-align: right;">${count}</div>
+                </div>
+            `;
+            totalCount += count;
+        }
+    });
+
+    if (!breakdownHtml) {
+        breakdownHtml = '<p style="text-align: center; color: #657786; padding: 20px;">No reactions yet</p>';
+    }
+
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e1e8ed; padding-bottom: 15px;">
+                <h3 style="margin: 0; color: #14171a; font-size: 20px;">Reactions</h3>
+                <button onclick="document.getElementById('reactions-modal').remove()" style="
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #657786;
+                ">×</button>
+            </div>
+            <div style="color: #657786; font-size: 14px; margin-bottom: 15px;">
+                Total: <strong style="color: #14171a;">${totalCount}</strong> reactions
+            </div>
+            ${breakdownHtml}
+        </div>
+    `;
+
+    // Close modal on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    // Add fade-in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    `;
+    if (!document.querySelector('style[data-reactions-modal]')) {
+        style.setAttribute('data-reactions-modal', 'true');
+        document.head.appendChild(style);
+    }
+}
+
+// ===============================================
+// HELPER FUNCTIONS
+// ===============================================
+
 function loadPostsForHome() {
     try {
         const raw = localStorage.getItem('nexora_posts_v1');
@@ -251,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const userSession = getUserSession();
         const post = {
             id: Date.now().toString(),
             caption: caption,
@@ -258,7 +390,18 @@ document.addEventListener('DOMContentLoaded', () => {
             likes: 0,
             shares: 0,
             bookmarked: false,
-            time: new Date().toISOString()
+            time: new Date().toISOString(),
+            reactions: {
+                like: 0,
+                love: 0,
+                wow: 0,
+                heartEyes: 0,
+                party: 0,
+                fire: 0
+            },
+            userReactions: {},
+            author: userSession ? userSession.name : 'You',
+            authorUsername: userSession ? userSession.username : '@user'
         };
 
         console.log('Creating post with', post.images.length, 'images');
@@ -341,7 +484,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadPostsFromStorage() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            return raw ? JSON.parse(raw) : [];
+            const posts = raw ? JSON.parse(raw) : [];
+            // Migrate old posts to have reactions object
+            posts.forEach(post => {
+                if (!post.reactions) {
+                    post.reactions = {
+                        like: 0,
+                        love: 0,
+                        wow: 0,
+                        heartEyes: 0,
+                        party: 0,
+                        fire: 0
+                    };
+                }
+                // Migrate from old single-user reaction to multi-user
+                if (!post.userReactions) {
+                    post.userReactions = {};
+                }
+                if (!post.author) {
+                    post.author = 'You';
+                    post.authorUsername = '@user';
+                }
+            });
+            return posts;
         } catch (e) {
             return [];
         }
@@ -376,10 +541,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const header = document.createElement('div');
         header.className = 'post-header';
+        const authorName = post.author || 'You';
+        const authorUsername = post.authorUsername || '@user';
         header.innerHTML = `
             <img src="${profilePicture}" alt="User Avatar" class="avatar-sm">
             <div class="post-info">
-                <h4>You</h4>
+                <h4>${authorName} <span style="color: #657786; font-weight: 400; font-size: 14px;">${authorUsername}</span></h4>
                 <span class="post-time">${timeAgoShort(post.time)}</span>
             </div>
             <div class="post-menu-container" style="position: relative;">
@@ -413,17 +580,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const stats = document.createElement('div');
         stats.className = 'post-stats';
         
-        // Build reactions and shares display
+        // Build reactions and shares display with breakdown
         let reactionsCount = '0 reactions';
         if (post.reactions && Object.keys(post.reactions).length > 0) {
-            const reactionEmojis = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'wow': '😮', 'smile': '😄' };
+            const reactionEmojis = { 
+                'like': '👍', 
+                'love': '❤️', 
+                'wow': '😮',
+                'heartEyes': '😍',
+                'party': '🎉',
+                'fire': '🔥'
+            };
             const totalReactions = Object.values(post.reactions).reduce((a, b) => a + b, 0);
             
             if (totalReactions > 0) {
                 let uniqueReactions = [];
+                let breakdownText = '';
                 Object.entries(post.reactions).forEach(([type, count]) => {
                     if (count > 0) {
                         uniqueReactions.push(reactionEmojis[type] || '👍');
+                        const reactionNames = {
+                            'like': 'Like',
+                            'love': 'Love',
+                            'wow': 'Wow',
+                            'heartEyes': 'Love It',
+                            'party': 'Celebrate',
+                            'fire': 'Fire'
+                        };
+                        breakdownText += `${reactionEmojis[type]} ${count} ${reactionNames[type]}\n`;
                     }
                 });
                 
@@ -432,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ).join('');
                 
                 reactionsCount = `
-                    <div class="reactions-display">
+                    <div class="reactions-display" title="${breakdownText.trim()}" data-post-id="${post.id}">
                         ${badgesHtml}
                         <span class="reactions-label">${totalReactions} ${totalReactions === 1 ? 'reaction' : 'reactions'}</span>
                     </div>
@@ -455,9 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="reaction-picker-panel">
                     <button class="reaction-picker-btn" data-reaction="like" title="Like">👍</button>
                     <button class="reaction-picker-btn" data-reaction="love" title="Love">❤️</button>
-                    <button class="reaction-picker-btn" data-reaction="haha" title="Haha">😂</button>
-                    <button class="reaction-picker-btn" data-reaction="smile" title="Smile">😄</button>
                     <button class="reaction-picker-btn" data-reaction="wow" title="Wow">😮</button>
+                    <button class="reaction-picker-btn" data-reaction="heartEyes" title="Love It">😍</button>
+                    <button class="reaction-picker-btn" data-reaction="party" title="Celebrate">🎉</button>
+                    <button class="reaction-picker-btn" data-reaction="fire" title="Fire">🔥</button>
                 </div>
             </div>
             <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
@@ -486,11 +671,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initialize reactions object if not exists
         if (!post.reactions) {
-            post.reactions = { 'like': 0, 'love': 0, 'haha': 0, 'smile': 0, 'wow': 0 };
+            post.reactions = { 'like': 0, 'love': 0, 'wow': 0, 'heartEyes': 0, 'party': 0, 'fire': 0 };
         }
 
-        // Reaction emoji map
-        const reactionEmojis = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'smile': '😄', 'wow': '😮' };
+        // Reaction emoji map - All positive emojis only
+        const reactionEmojis = { 
+            'like': '👍', 
+            'love': '❤️', 
+            'wow': '😮',
+            'heartEyes': '😍',
+            'party': '🎉',
+            'fire': '🔥'
+        };
 
         // Mobile long-press detection
         let touchStartTime = 0;
@@ -523,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const reactionType = btn.dataset.reaction;
-                const reactionEmojisMap = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'smile': '😄', 'wow': '😮' };
+                const reactionEmojisMap = { 'like': '👍', 'love': '❤️', 'wow': '😮', 'heartEyes': '😍', 'party': '🎉', 'fire': '🔥' };
                 
                 // Animate the emoji flying up (Facebook style)
                 const emoji = reactionEmojisMap[reactionType];
@@ -539,20 +731,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     likeBtn.style.animation = 'buttonPulse 0.4s ease-out';
                 }, 10);
                 
+                // Get current user's email to track their reaction
+                const currentUser = getUserSession();
+                const userEmail = currentUser ? currentUser.email : 'guest';
+                const previousReaction = post.userReactions[userEmail];
+                
                 // Remove previous user reaction
-                Object.keys(post.reactions).forEach(key => {
-                    if (post._userReaction === key && post.reactions[key] > 0) {
-                        post.reactions[key]--;
-                    }
-                });
+                if (previousReaction && post.reactions[previousReaction] > 0) {
+                    post.reactions[previousReaction]--;
+                }
 
                 // Add new reaction
-                if (post._userReaction !== reactionType) {
+                if (previousReaction !== reactionType) {
                     post.reactions[reactionType]++;
-                    post._userReaction = reactionType;
+                    post.userReactions[userEmail] = reactionType;
                 } else {
                     // Click same reaction again to remove it
-                    post._userReaction = null;
+                    delete post.userReactions[userEmail];
                 }
 
                 reactionPanel.classList.remove('show');
@@ -583,17 +778,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Get current user's email to track their reaction
+            const currentUser = getUserSession();
+            const userEmail = currentUser ? currentUser.email : 'guest';
+            const previousReaction = post.userReactions[userEmail];
+            
             // Toggle like reaction
-            if (post._userReaction === 'like') {
+            if (previousReaction === 'like') {
                 post.reactions['like']--;
-                post._userReaction = null;
+                delete post.userReactions[userEmail];
             } else {
                 // Remove previous reaction
-                if (post._userReaction && post.reactions[post._userReaction] > 0) {
-                    post.reactions[post._userReaction]--;
+                if (previousReaction && post.reactions[previousReaction] > 0) {
+                    post.reactions[previousReaction]--;
                 }
                 post.reactions['like']++;
-                post._userReaction = 'like';
+                post.userReactions[userEmail] = 'like';
             }
 
             reactionPanel.classList.remove('show');
@@ -686,9 +886,28 @@ document.addEventListener('DOMContentLoaded', () => {
             let reactionsContent = '0 reactions';
             if (totalReactions > 0) {
                 let uniqueReactions = [];
+                let breakdownText = '';
+                const reactionEmojiDisplay = { 
+                    'like': '👍', 
+                    'love': '❤️', 
+                    'wow': '😮',
+                    'heartEyes': '😍',
+                    'party': '🎉',
+                    'fire': '🔥'
+                };
+                
                 Object.entries(post.reactions).forEach(([type, count]) => {
                     if (count > 0) {
-                        uniqueReactions.push(reactionEmojis[type] || '👍');
+                        uniqueReactions.push(reactionEmojiDisplay[type] || '👍');
+                        const reactionNames = {
+                            'like': 'Like',
+                            'love': 'Love',
+                            'wow': 'Wow',
+                            'heartEyes': 'Love It',
+                            'party': 'Celebrate',
+                            'fire': 'Fire'
+                        };
+                        breakdownText += `${reactionEmojiDisplay[type]} ${count} ${reactionNames[type]}\n`;
                     }
                 });
                 
@@ -697,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ).join('');
                 
                 reactionsContent = `
-                    <div class="reactions-display">
+                    <div class="reactions-display" title="${breakdownText.trim()}" style="cursor: pointer;">
                         ${badgesHtml}
                         <span class="reactions-label">${totalReactions} ${totalReactions === 1 ? 'reaction' : 'reactions'}</span>
                     </div>
@@ -710,11 +929,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fas fa-paper-plane"></i> ${post.shares} shares
                 </div>
             `;
+            
+            // Add click handler to show detailed reactions breakdown
+            const reactionsDisplay = statsEl.querySelector('.reactions-display');
+            if (reactionsDisplay) {
+                reactionsDisplay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showReactionsBreakdown(post.reactions);
+                });
+            }
 
-            // Update like button
+            // Update like button based on current user's reaction
             if (likeBtn) {
-                if (post._userReaction) {
-                    likeBtn.innerHTML = `${reactionEmojis[post._userReaction]} Unlike`;
+                const reactionEmojiDisplay = { 
+                    'like': '👍', 
+                    'love': '❤️', 
+                    'wow': '😮',
+                    'heartEyes': '😍',
+                    'party': '🎉',
+                    'fire': '🔥'
+                };
+                const currentUser = getUserSession();
+                const userEmail = currentUser ? currentUser.email : 'guest';
+                const userReaction = post.userReactions ? post.userReactions[userEmail] : null;
+                
+                if (userReaction) {
+                    likeBtn.innerHTML = `${reactionEmojiDisplay[userReaction]} Unlike`;
                 } else {
                     likeBtn.innerHTML = '<i class="far fa-thumbs-up"></i> Like';
                 }

@@ -412,12 +412,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const stats = document.createElement('div');
         stats.className = 'post-stats';
-        stats.innerHTML = `<span class="likes"><i class="fas fa-thumbs-up"></i> ${post.likes} likes</span><span class="shares"><i class="fas fa-paper-plane"></i> ${post.shares} shares</span>`;
+        
+        // Build reactions and shares display
+        let reactionsCount = '0 reactions';
+        if (post.reactions && Object.keys(post.reactions).length > 0) {
+            const reactionEmojis = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'wow': '😮', 'smile': '😄' };
+            const totalReactions = Object.values(post.reactions).reduce((a, b) => a + b, 0);
+            
+            if (totalReactions > 0) {
+                let uniqueReactions = [];
+                Object.entries(post.reactions).forEach(([type, count]) => {
+                    if (count > 0) {
+                        uniqueReactions.push(reactionEmojis[type] || '👍');
+                    }
+                });
+                
+                let badgesHtml = uniqueReactions.slice(0, 3).map(emoji => 
+                    `<span class="reaction-badge">${emoji}</span>`
+                ).join('');
+                
+                reactionsCount = `
+                    <div class="reactions-display">
+                        ${badgesHtml}
+                        <span class="reactions-label">${totalReactions} ${totalReactions === 1 ? 'reaction' : 'reactions'}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        stats.innerHTML = `
+            <div class="stats-left">${reactionsCount}</div>
+            <div class="stats-right">
+                <i class="fas fa-paper-plane"></i> ${post.shares} shares
+            </div>
+        `;
 
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-            <button class="action-like action-btn">${post.likes ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like'}</button>
+            <div class="reaction-picker-container">
+                <button class="action-like action-btn"><i class="far fa-thumbs-up"></i> Like</button>
+                <div class="reaction-picker-panel">
+                    <button class="reaction-picker-btn" data-reaction="like" title="Like">👍</button>
+                    <button class="reaction-picker-btn" data-reaction="love" title="Love">❤️</button>
+                    <button class="reaction-picker-btn" data-reaction="haha" title="Haha">😂</button>
+                    <button class="reaction-picker-btn" data-reaction="smile" title="Smile">😄</button>
+                    <button class="reaction-picker-btn" data-reaction="wow" title="Wow">😮</button>
+                </div>
+            </div>
             <button class="action-bookmark action-btn">${post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark'}</button>
             <button class="action-share action-btn"><i class="far fa-paper-plane"></i> Share</button>
         `;
@@ -438,7 +480,126 @@ document.addEventListener('DOMContentLoaded', () => {
         const menuBtn = postEl.querySelector('.post-menu-btn');
         const menuDropdown = postEl.querySelector('.post-menu-dropdown');
         const menuContainer = postEl.querySelector('.post-menu-container');
-        
+        const reactionContainer = postEl.querySelector('.reaction-picker-container');
+        const reactionPanel = postEl.querySelector('.reaction-picker-panel');
+        const reactionBtns = postEl.querySelectorAll('.reaction-picker-btn');
+
+        // Initialize reactions object if not exists
+        if (!post.reactions) {
+            post.reactions = { 'like': 0, 'love': 0, 'haha': 0, 'smile': 0, 'wow': 0 };
+        }
+
+        // Reaction emoji map
+        const reactionEmojis = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'smile': '😄', 'wow': '😮' };
+
+        // Mobile long-press detection
+        let touchStartTime = 0;
+        const longPressDuration = 500;
+
+        // Show reaction panel on hover (desktop)
+        reactionContainer.addEventListener('mouseenter', () => {
+            reactionPanel.classList.add('show');
+        });
+
+        reactionContainer.addEventListener('mouseleave', () => {
+            reactionPanel.classList.remove('show');
+        });
+
+        // Long-press detection for mobile
+        likeBtn.addEventListener('touchstart', () => {
+            touchStartTime = Date.now();
+        });
+
+        likeBtn.addEventListener('touchend', (e) => {
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration >= longPressDuration) {
+                e.preventDefault();
+                reactionPanel.classList.add('show');
+            }
+        });
+
+        // Handle reaction selection
+        reactionBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const reactionType = btn.dataset.reaction;
+                const reactionEmojisMap = { 'like': '👍', 'love': '❤️', 'haha': '😂', 'smile': '😄', 'wow': '😮' };
+                
+                // Animate the emoji flying up (Facebook style)
+                const emoji = reactionEmojisMap[reactionType];
+                animateEmojiPop(btn, emoji);
+                
+                // Add button animation
+                btn.classList.add('clicked');
+                setTimeout(() => btn.classList.remove('clicked'), 600);
+
+                // Pulse animation on like button
+                likeBtn.style.animation = 'none';
+                setTimeout(() => {
+                    likeBtn.style.animation = 'buttonPulse 0.4s ease-out';
+                }, 10);
+                
+                // Remove previous user reaction
+                Object.keys(post.reactions).forEach(key => {
+                    if (post._userReaction === key && post.reactions[key] > 0) {
+                        post.reactions[key]--;
+                    }
+                });
+
+                // Add new reaction
+                if (post._userReaction !== reactionType) {
+                    post.reactions[reactionType]++;
+                    post._userReaction = reactionType;
+                } else {
+                    // Click same reaction again to remove it
+                    post._userReaction = null;
+                }
+
+                reactionPanel.classList.remove('show');
+                saveAndRefresh(post.id);
+            });
+        });
+
+        // Animate emoji pop effect
+        function animateEmojiPop(sourceBtn, emoji) {
+            const emojiEl = document.createElement('div');
+            emojiEl.textContent = emoji;
+            emojiEl.className = 'emoji-animation';
+            
+            const rect = sourceBtn.getBoundingClientRect();
+            emojiEl.style.left = (rect.left + rect.width / 2) + 'px';
+            emojiEl.style.top = (rect.top + rect.height / 2) + 'px';
+            
+            document.body.appendChild(emojiEl);
+            
+            // Remove after animation completes
+            setTimeout(() => emojiEl.remove(), 1000);
+        }
+
+        // Like button - toggle first positive reaction (Like)
+        likeBtn && likeBtn.addEventListener('click', (e) => {
+            if (reactionPanel.classList.contains('show')) {
+                e.preventDefault();
+                return;
+            }
+
+            // Toggle like reaction
+            if (post._userReaction === 'like') {
+                post.reactions['like']--;
+                post._userReaction = null;
+            } else {
+                // Remove previous reaction
+                if (post._userReaction && post.reactions[post._userReaction] > 0) {
+                    post.reactions[post._userReaction]--;
+                }
+                post.reactions['like']++;
+                post._userReaction = 'like';
+            }
+
+            reactionPanel.classList.remove('show');
+            saveAndRefresh(post.id);
+        });
+
         // Toggle menu dropdown
         menuBtn && menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -450,12 +611,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             // Toggle current menu
             menuDropdown.style.display = menuDropdown.style.display === 'none' ? 'block' : 'none';
-        });
-
-        likeBtn && likeBtn.addEventListener('click', () => {
-            post.likes = (post.likes || 0) + (post._liked ? -1 : 1);
-            post._liked = !post._liked;
-            saveAndRefresh(post.id);
         });
 
         bookmarkBtn && bookmarkBtn.addEventListener('click', () => {
@@ -523,10 +678,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const idx = postsArr.findIndex(p => p.id === id);
             if (idx > -1) postsArr[idx] = post;
             savePostsToStorage(postsArr);
-            // update UI pieces
-            const updatedLikes = postEl.querySelector('.post-stats .likes') || postEl.querySelector('.likes');
-            if (updatedLikes) updatedLikes.innerHTML = `<i class="fas fa-thumbs-up"></i> ${post.likes} likes`;
-            if (likeBtn) likeBtn.innerHTML = post._liked ? '<i class="fas fa-thumbs-up"></i> Unlike' : '<i class="far fa-thumbs-up"></i> Like';
+
+            // Update reactions display
+            const statsEl = postEl.querySelector('.post-stats');
+            const totalReactions = Object.values(post.reactions).reduce((a, b) => a + b, 0);
+            
+            let reactionsContent = '0 reactions';
+            if (totalReactions > 0) {
+                let uniqueReactions = [];
+                Object.entries(post.reactions).forEach(([type, count]) => {
+                    if (count > 0) {
+                        uniqueReactions.push(reactionEmojis[type] || '👍');
+                    }
+                });
+                
+                let badgesHtml = uniqueReactions.slice(0, 3).map(emoji => 
+                    `<span class="reaction-badge">${emoji}</span>`
+                ).join('');
+                
+                reactionsContent = `
+                    <div class="reactions-display">
+                        ${badgesHtml}
+                        <span class="reactions-label">${totalReactions} ${totalReactions === 1 ? 'reaction' : 'reactions'}</span>
+                    </div>
+                `;
+            }
+
+            statsEl.innerHTML = `
+                <div class="stats-left">${reactionsContent}</div>
+                <div class="stats-right">
+                    <i class="fas fa-paper-plane"></i> ${post.shares} shares
+                </div>
+            `;
+
+            // Update like button
+            if (likeBtn) {
+                if (post._userReaction) {
+                    likeBtn.innerHTML = `${reactionEmojis[post._userReaction]} Unlike`;
+                } else {
+                    likeBtn.innerHTML = '<i class="far fa-thumbs-up"></i> Like';
+                }
+            }
+
             if (bookmarkBtn) bookmarkBtn.innerHTML = post.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
             // caption refresh
             const cap = postEl.querySelector('.post-caption');

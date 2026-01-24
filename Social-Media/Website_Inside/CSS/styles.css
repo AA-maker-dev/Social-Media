@@ -743,35 +743,69 @@ body {
 .post-stats {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     color: var(--gray-color);
     font-size: 13px;
-    padding: 12px 0;
+    padding: 12px 16px;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     margin: 12px 0;
+    gap: 16px;
 }
 
-.post-stats span {
-    cursor: pointer;
-    transition: var(--transition);
+.stats-left,
+.stats-right {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.reactions-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
     padding: 4px 8px;
     border-radius: 12px;
-}
-
-.post-stats span:hover {
-    color: var(--primary-color);
-    background: rgba(29, 161, 242, 0.1);
-    transform: translateY(-1px);
-}
-
-.post-stats span i {
     transition: var(--transition-fast);
 }
 
-.post-stats span:hover i {
+.reactions-display:hover {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--primary-color);
+}
+
+.reaction-badge {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.reactions-label {
+    font-size: 13px;
+    color: var(--gray-color);
+}
+
+.reactions-display:hover .reactions-label {
+    color: var(--primary-color);
+}
+
+.stats-right {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 12px;
+    transition: var(--transition-fast);
+}
+
+.stats-right:hover {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--primary-color);
+}
+
+.stats-right i {
+    transition: var(--transition-fast);
+}
+
+.stats-right:hover i {
     transform: scale(1.2);
 }
 
@@ -1094,4 +1128,243 @@ a, button, input, label {
 
 .user-profile:hover p {
     color: var(--secondary-color);
+}
+
+/* ========================================
+   FACEBOOK-STYLE POSITIVE REACTIONS
+   ======================================== */
+
+/* Reactions Display Section */
+.reactions-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--gray-color);
+    margin-bottom: 12px;
+}
+
+.reactions-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.reactions-count:hover {
+    color: var(--primary-color);
+}
+
+.reaction-emoji-badges {
+    display: flex;
+    gap: -8px;
+    align-items: center;
+}
+
+.reaction-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e1e8ed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-left: -8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: var(--transition-fast);
+}
+
+.reaction-badge:first-child {
+    margin-left: 0;
+}
+
+.reaction-badge:hover {
+    transform: scale(1.2);
+    margin-bottom: 4px;
+}
+
+/* Reaction Picker Container */
+.reaction-picker-container {
+    position: relative;
+    display: inline-block;
+}
+
+.reaction-picker-panel {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: white;
+    border-radius: 25px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    margin-bottom: 8px;
+    white-space: nowrap;
+}
+
+.reaction-picker-panel.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.reaction-picker-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.reaction-picker-btn:hover {
+    transform: scale(1.4) translateY(-10px);
+}
+
+/* Reaction Label */
+.reaction-label {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.7);
+    margin-top: 2px;
+    text-align: center;
+}
+
+/* Like Button Styles */
+.action-like {
+    position: relative;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .reaction-picker-panel {
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    .reaction-picker-btn {
+        font-size: 28px;
+        padding: 2px 6px;
+    }
+
+    .reaction-picker-btn:hover {
+        transform: scale(1.3) translateY(-8px);
+    }
+
+    .reaction-badge {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+}
+
+/* Animation for reactions appearing */
+@keyframes reactionBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Facebook-style emoji pop animation */
+@keyframes emojiPop {
+    0% {
+        opacity: 0;
+        transform: scale(0) translateY(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.3) translateY(-20px);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1) translateY(-60px);
+    }
+}
+
+/* Emoji floating animation */
+@keyframes emojiFloat {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8) translateY(-80px);
+    }
+}
+
+/* Like button pulse animation */
+@keyframes buttonPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Badge pop animation */
+@keyframes badgePop {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    60% {
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Reaction picker emoji scale animation on click */
+@keyframes reactionClick {
+    0% {
+        transform: scale(1.4) translateY(-10px);
+    }
+    50% {
+        transform: scale(1.8) translateY(-15px);
+    }
+    100% {
+        transform: scale(0.8) translateY(-60px);
+        opacity: 0;
+    }
+}
+
+.emoji-animation {
+    animation: emojiFloat 1s ease-out forwards;
+    position: fixed;
+    pointer-events: none;
+    font-size: 32px;
+    z-index: 9999;
+}
+
+.reaction-picker-btn.clicked {
+    animation: reactionClick 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }

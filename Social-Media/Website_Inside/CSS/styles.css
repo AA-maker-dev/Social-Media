@@ -137,7 +137,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
     background-attachment: fixed;
     color: var(--secondary-color);
     overflow-x: hidden;
@@ -471,7 +471,7 @@ body {
 }
 
 .trending-item:hover {
-    background: linear-gradient(90deg, rgba(29, 161, 242, 0.1), rgba(29, 161, 242, 0.05));
+    background: linear-gradient(90deg, rgba(255, 127, 7, 0.1), rgba(255, 127, 7, 0.05));
     transform: translateX(5px);
     padding-left: 15px;
 }
@@ -535,7 +535,7 @@ body {
 
 .post-creator:focus-within {
     background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 12px rgba(29, 161, 242, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 127, 7, 0.1);
 }
 
 .post-input {
@@ -553,7 +553,7 @@ body {
 .post-input:focus {
     background: rgba(255, 255, 255, 0.95);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 127, 7, 0.1);
     transform: translateY(-1px);
 }
 
@@ -575,7 +575,7 @@ body {
 
 .upload-btn:hover {
     color: var(--primary-color);
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
@@ -754,7 +754,7 @@ body {
 
 .btn-more:hover {
     color: var(--primary-color);
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     transform: scale(1.05);
 }
 
@@ -781,7 +781,7 @@ body {
 
 .post-menu-btn:hover {
     color: var(--primary-color);
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
 }
 
 .post-menu-dropdown {
@@ -825,7 +825,7 @@ body {
 }
 
 .post-menu-item:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
 }
 
@@ -857,8 +857,8 @@ body {
 .post-image {
     width: 100%;
     border-radius: 16px;
-    object-fit: cover;
-    max-height: 400px;
+    object-fit: contain;
+    max-height: 600px;
     margin-top: 12px;
     box-shadow: var(--shadow-md);
     transition: var(--transition);
@@ -998,14 +998,14 @@ body {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     transform: translate(-50%, -50%);
     transition: var(--transition);
 }
 
 .action-btn:hover {
     color: var(--primary-color);
-    background-color: rgba(29, 161, 242, 0.1);
+    background-color: rgba(255, 127, 7, 0.1);
     transform: translateY(-2px);
 }
 
@@ -1049,7 +1049,7 @@ body {
 }
 
 .suggestion:hover {
-    background: rgba(29, 161, 242, 0.05);
+    background: rgba(255, 127, 7, 0.05);
     transform: translateX(5px);
 }
 
@@ -1255,7 +1255,7 @@ html {
 
 /* Selection styles */
 ::selection {
-    background: rgba(29, 161, 242, 0.2);
+    background: rgba(255, 127, 7, 0.2);
     color: var(--secondary-color);
 }
 

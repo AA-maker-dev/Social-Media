@@ -70,7 +70,7 @@
 }
 
 .mark-all-read-btn:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     border-color: var(--primary-color);
     transform: translateY(-2px);
@@ -93,7 +93,7 @@
 }
 
 .settings-btn:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     border-color: var(--primary-color);
     transform: rotate(90deg) scale(1.1);
@@ -118,7 +118,7 @@
 }
 
 .notification-filters::-webkit-scrollbar-thumb {
-    background: rgba(29, 161, 242, 0.3);
+    background: rgba(255, 127, 7, 0.3);
     border-radius: 2px;
 }
 
@@ -141,14 +141,14 @@
 }
 
 .filter-btn:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
     color: white;
     border-color: transparent;
     box-shadow: var(--shadow-md);
@@ -205,7 +205,7 @@
     top: 0;
     width: 4px;
     height: 0;
-    background: linear-gradient(180deg, var(--primary-color), #1a91da);
+    background: linear-gradient(180deg, var(--primary-color), #ff9c33);
     border-radius: 0 0 4px 0;
     transition: var(--transition);
 }
@@ -221,7 +221,7 @@
 }
 
 .notification-item.unread {
-    background: rgba(29, 161, 242, 0.05);
+    background: rgba(255, 127, 7, 0.05);
     border-left: 4px solid var(--primary-color);
 }
 
@@ -269,7 +269,7 @@
 }
 
 .notification-icon.comment {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
 }
 
 .notification-icon.follow {
@@ -342,7 +342,7 @@
 }
 
 .notification-action-btn:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     border-color: var(--primary-color);
     transform: translateY(-1px);
@@ -350,7 +350,7 @@
 }
 
 .notification-action-btn.primary {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
     color: white;
     border-color: transparent;
 }
@@ -373,7 +373,7 @@
 }
 
 .notification-item:hover .notification-preview {
-    background: rgba(29, 161, 242, 0.05);
+    background: rgba(255, 127, 7, 0.05);
     color: var(--secondary-color);
 }
 
@@ -435,7 +435,7 @@
 }
 
 .notification-item[data-type="comment"] .notification-icon {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
 }
 
 .notification-item[data-type="follow"] .notification-icon {

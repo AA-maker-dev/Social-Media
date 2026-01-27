@@ -17,9 +17,12 @@ function updateNavbarAuth() {
     const authNavItem = document.getElementById('authNavItem');
     const logoutNavItem = document.getElementById('logoutNavItem');
     
+    // Show logout only on profile page
+    const isProfilePage = window.location.pathname.includes('profile.html');
+    
     if (isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'none';
-        logoutNavItem.style.display = 'block'; // Always show on profile page when logged in
+        logoutNavItem.style.display = isProfilePage ? 'block' : 'none';
     } else if (!isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'block';
         logoutNavItem.style.display = 'none';
@@ -30,16 +33,9 @@ function updateNavbarAuth() {
 function logout(event) {
     if (event) event.preventDefault();
     if (confirm('Are you sure you want to logout?')) {
-        // Clear all session and auth data
         localStorage.removeItem('userSession');
-        localStorage.removeItem('authToken');
         localStorage.removeItem('rememberUser');
-        sessionStorage.clear(); // Clear session storage as well
-        
-        // Redirect to login page
-        setTimeout(() => {
-            window.location.href = '../../Login/FrontEnd/login.html';
-        }, 500);
+        window.location.href = '../../Login/FrontEnd/login.html';
     }
 }
 
@@ -88,21 +84,8 @@ function getUserProfileStorageKey(email) {
     return `nexora_profile_${email}`;
 }
 
-// Get user-specific storage key for posts
-function getUserProfileStorageKeyForPosts(email) {
-    return `nexora_posts_${email || 'default'}`;
-}
-
-// Profile functionality - use user-specific storage for posts
-function getPostsStorageKey() {
-    const userSession = getUserSession();
-    if (userSession && userSession.email) {
-        return getUserProfileStorageKeyForPosts(userSession.email);
-    }
-    return 'nexora_posts_v1'; // Fallback for non-logged-in users
-}
-
-const POSTS_STORAGE_KEY = getPostsStorageKey();
+// Profile functionality
+const POSTS_STORAGE_KEY = 'nexora_posts_v1';
 
 // Get STORAGE_KEY based on current user
 function getStorageKey() {
@@ -113,7 +96,7 @@ function getStorageKey() {
     return 'nexora_profile_default';
 }
 
-let STORAGE_KEY = getStorageKey();
+const STORAGE_KEY = getStorageKey();
 
 // Default avatar URL
 const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
@@ -353,83 +336,59 @@ function closePostsModal() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        // Reload profile to apply fixes
-        profile = loadProfile();
-        
-        if (Object.keys(profile).length === 0) {
-            profile = defaultProfile;
-        }
-        
-        // Save profile to ensure defaults are stored
-        saveProfile();
-        
-        renderProfile();
-        setupEventListeners();
-        renderPosts();
-        renderPhotos();
-        renderSavedPosts();
-        
-        // Listen for storage changes to update posts when new ones are created
-        window.addEventListener('storage', (e) => {
-            if (e.key === POSTS_STORAGE_KEY) {
-                try {
-                    renderPosts();
-                    renderSavedPosts();
-                } catch (err) {
-                    console.error('Error handling storage change:', err);
-                }
-            }
-        });
-        
-        // Also listen for custom event (when posts are updated in same tab)
-        window.addEventListener('postsUpdated', () => {
-            try {
-                console.log('Posts updated event received');
-                renderPosts();
-                renderSavedPosts();
-                updatePostsCount();
-            } catch (err) {
-                console.error('Error handling postsUpdated event:', err);
-            }
-        });
-        
-        // Update when page becomes visible
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                try {
-                    renderPosts();
-                    renderSavedPosts();
-                    updatePostsCount();
-                } catch (err) {
-                    console.error('Error on visibility change:', err);
-                }
-            }
-        });
-        
-        // Update on page focus
-        window.addEventListener('focus', () => {
-            try {
-                renderPosts();
-                renderSavedPosts();
-                updatePostsCount();
-            } catch (err) {
-                console.error('Error on page focus:', err);
-            }
-        });
-        
-        // Force refresh posts on initial load
-        setTimeout(() => {
-            try {
-                renderPosts();
-                updatePostsCount();
-            } catch (err) {
-                console.error('Error on initial load:', err);
-            }
-        }, 100);
-    } catch (err) {
-        console.error('Error initializing profile page:', err);
+    // Reload profile to apply fixes
+    profile = loadProfile();
+    
+    if (Object.keys(profile).length === 0) {
+        profile = defaultProfile;
     }
+    
+    // Save profile to ensure defaults are stored
+    saveProfile();
+    
+    renderProfile();
+    setupEventListeners();
+    renderPosts();
+    renderPhotos();
+    renderSavedPosts();
+    
+    // Listen for storage changes to update posts when new ones are created
+    window.addEventListener('storage', (e) => {
+        if (e.key === POSTS_STORAGE_KEY) {
+            renderPosts();
+            renderSavedPosts();
+        }
+    });
+    
+    // Also listen for custom event (when posts are updated in same tab)
+    window.addEventListener('postsUpdated', () => {
+        console.log('Posts updated event received');
+        renderPosts();
+        renderSavedPosts();
+        updatePostsCount();
+    });
+    
+    // Update when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            renderPosts();
+            renderSavedPosts();
+            updatePostsCount();
+        }
+    });
+    
+    // Update on page focus
+    window.addEventListener('focus', () => {
+        renderPosts();
+        renderSavedPosts();
+        updatePostsCount();
+    });
+    
+    // Force refresh posts on initial load
+    setTimeout(() => {
+        renderPosts();
+        updatePostsCount();
+    }, 100);
 });
 
 // Storage functions
@@ -481,16 +440,9 @@ function saveProfile() {
 // Load posts from storage
 function loadPostsFromStorage() {
     try {
-        console.log('📊 [Profile] loadPostsFromStorage - Using key:', POSTS_STORAGE_KEY);
         const raw = localStorage.getItem(POSTS_STORAGE_KEY);
-        const posts = raw ? JSON.parse(raw) : [];
-        console.log('📊 [Profile] Loaded posts:', posts.length, '| Raw data size:', raw ? raw.length + ' bytes' : '0 bytes');
-        if (posts.length > 0) {
-            console.log('📊 [Profile] Sample post keys:', Object.keys(posts[0]));
-        }
-        return posts;
+        return raw ? JSON.parse(raw) : [];
     } catch (e) {
-        console.error('📊 [Profile] Error loading posts from storage:', e);
         return [];
     }
 }
@@ -575,10 +527,7 @@ function renderPosts() {
     grid.innerHTML = '';
     
     const posts = loadPostsFromStorage();
-    console.log('📊 [Profile] Loading posts from storage:', posts.length, 'posts found');
-    if (posts.length > 0) {
-        console.log('📊 [Profile] First 3 posts:', posts.slice(0, 3).map(p => ({id: p.id, author: p.author, hasImages: (p.images && p.images.length > 0)})));
-    }
+    console.log('Loading posts from storage:', posts.length, 'posts found', posts);
     
     if (!posts || posts.length === 0) {
         grid.innerHTML = `
@@ -595,8 +544,6 @@ function renderPosts() {
     // Sort posts by time (newest first)
     const sortedPosts = [...posts].sort((a, b) => new Date(b.time) - new Date(a.time));
     
-    console.log('📊 [Profile] Rendering', sortedPosts.length, 'sorted posts to DOM');
-    
     sortedPosts.forEach((post, index) => {
         const card = document.createElement('div');
         card.className = 'post-card';
@@ -605,7 +552,6 @@ function renderPosts() {
         
         // Get first image if available
         const postImage = post.images && post.images.length > 0 ? post.images[0] : null;
-        console.log(`📊 [Profile] Post ${index + 1} (${post.id}): hasImages=${!!postImage}, captionLength=${post.caption?.length || 0}`);
         
         // Use shares as comments count (or you can add a comments field later)
         const commentsCount = post.shares || 0;
@@ -616,7 +562,7 @@ function renderPosts() {
         } else {
             // If no image, show a placeholder or caption preview
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -699,7 +645,7 @@ function renderSavedPosts() {
             imageHtml = `<img src="${postImage}" alt="Saved Post" class="post-card-image">`;
         } else {
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -725,66 +671,59 @@ function renderSavedPosts() {
 
 // Setup event listeners
 function setupEventListeners() {
-    try {
-        // Tab buttons
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.tab;
-                switchTab(tab);
-            });
+    // Tab buttons
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            switchTab(tab);
         });
+    });
+    
+    // Edit profile button
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    editProfileBtn.addEventListener('click', openEditModal);
+    
+    // Modal close
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const modal = document.getElementById('editProfileModal');
+    
+    closeModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
+    
+    // Close modal on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeEditModal();
+        }
+    });
+    
+    // Form submit
+    const editProfileForm = document.getElementById('editProfileForm');
+    editProfileForm.addEventListener('submit', handleSaveProfile);
+    
+    // Avatar edit - create hidden file input
+    const avatarEditBtn = document.getElementById('avatarEditBtn');
+    const avatarFileInput = document.createElement('input');
+    avatarFileInput.type = 'file';
+    avatarFileInput.accept = 'image/*';
+    avatarFileInput.style.display = 'none';
+    document.body.appendChild(avatarFileInput);
+    
+    avatarFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
         
-        // Edit profile button
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', openEditModal);
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
         }
         
-        // Modal close
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-        const modal = document.getElementById('editProfileModal');
-        
-        if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
-        if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
-        
-        // Close modal on outside click
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeEditModal();
-                }
-            });
-        }
-        
-        // Form submit
-        const editProfileForm = document.getElementById('editProfileForm');
-        if (editProfileForm) {
-            editProfileForm.addEventListener('submit', handleSaveProfile);
-        }
-        
-        // Avatar edit - create hidden file input
-        const avatarEditBtn = document.getElementById('avatarEditBtn');
-        const avatarFileInput = document.createElement('input');
-        avatarFileInput.type = 'file';
-        avatarFileInput.accept = 'image/*';
-        avatarFileInput.style.display = 'none';
-        document.body.appendChild(avatarFileInput);
-        
-        avatarFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select a valid image file.');
-                return;
-            }
-            
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size should be less than 5MB.');
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB.');
             return;
         }
         
@@ -1058,7 +997,7 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #ff9c33)'};
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #1a91da)'};
         color: white;
         padding: 16px 24px;
         border-radius: 12px;
@@ -1100,4 +1039,52 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// Settings Modal
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+const emailToggle = document.getElementById("emailNotificationsToggle");
+const logoutBtn = document.getElementById("logoutBtn");
+const changePasswordBtn = document.getElementById("changePasswordBtn");
+
+// Open / Close
+settingsBtn.addEventListener("click", () => {
+    settingsModal.classList.add("active");
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+    settingsModal.classList.remove("active");
+});
+
+// Load Settings
+darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
+emailToggle.checked = localStorage.getItem("emailNotifications") === "true";
+
+if (darkModeToggle.checked) {
+    document.body.classList.add("dark-mode");
+}
+
+// Dark Mode
+darkModeToggle.addEventListener("change", () => {
+    localStorage.setItem("darkMode", darkModeToggle.checked);
+    document.body.classList.toggle("dark-mode", darkModeToggle.checked);
+});
+
+// Email Notifications
+emailToggle.addEventListener("change", () => {
+    localStorage.setItem("emailNotifications", emailToggle.checked);
+});
+
+// Change Password
+changePasswordBtn.addEventListener("click", () => {
+    alert("Redirect to Change Password Page");
+});
+
+// Logout
+logoutBtn.addEventListener("click", () => {
+    localStorage.clear();
+    /z:/Social-Media/Social-Media/Login/login.html
+});
 

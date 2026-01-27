@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (!post.author) {
                     post.author = 'You';
-                    post.authorUsername = '@user';
+                    post.authorUsername = userSession ? userSession.username : '@user';
                 }
             });
             return posts;
@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const header = document.createElement('div');
         header.className = 'post-header';
         const authorName = post.author || 'You';
-        const authorUsername = post.authorUsername || '@user';
+        const authorUsername = post.authorUsername || (userSession ? userSession.username : '@user');
         header.innerHTML = `
             <img src="${profilePicture}" alt="User Avatar" class="avatar-sm">
             <div class="post-info">

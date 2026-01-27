@@ -781,6 +781,6 @@ changePasswordBtn.addEventListener("click", () => {
 // Logout
 logoutBtn.addEventListener("click", () => {
     localStorage.clear();
-    window.location.href = "login.html";
+    /z:/Social-Media/Social-Media/Login/login.html
 });
 

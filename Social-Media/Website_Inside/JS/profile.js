@@ -85,7 +85,14 @@ function getUserProfileStorageKey(email) {
 }
 
 // Profile functionality
-const POSTS_STORAGE_KEY = 'nexora_posts_v1';
+// User-specific posts storage key
+function getPostsStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_posts_${userSession.id}`;
+    }
+    return 'nexora_posts_default';
+}
 
 // Get STORAGE_KEY based on current user
 function getStorageKey() {
@@ -141,8 +148,56 @@ let profile = loadProfile();
 // ===================================
 
 // Follow/Unfollow System Storage
-const FOLLOWERS_STORAGE_KEY = 'nexora_followers';
-const FOLLOWING_STORAGE_KEY = 'nexora_following';
+// User-specific following/followers storage keys
+function getFollowingStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_following_${userSession.id}`;
+    }
+    return 'nexora_following_default';
+}
+
+function getFollowersStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_followers_${userSession.id}`;
+    }
+    return 'nexora_followers_default';
+}
+
+// Get followers
+function getFollowers() {
+    try {
+        const key = getFollowersStorageKey();
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Get following
+function getFollowing() {
+    try {
+        const key = getFollowingStorageKey();
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save followers
+function saveFollowers(followers) {
+    const key = getFollowersStorageKey();
+    localStorage.setItem(key, JSON.stringify(followers));
+}
+
+// Save following
+function saveFollowing(following) {
+    const key = getFollowingStorageKey();
+    localStorage.setItem(key, JSON.stringify(following));
+}
 
 // Available users to follow (simulated users)
 const availableUsers = [
@@ -153,36 +208,6 @@ const availableUsers = [
     { id: 'user5', name: 'Web Dev Daily', username: '@webdevdaily', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=' },
     { id: 'user6', name: 'Code Tips', username: '@codetips', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=' },
 ];
-
-// Get followers
-function getFollowers() {
-    try {
-        const raw = localStorage.getItem(FOLLOWERS_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-// Get following
-function getFollowing() {
-    try {
-        const raw = localStorage.getItem(FOLLOWING_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-// Save followers
-function saveFollowers(followers) {
-    localStorage.setItem(FOLLOWERS_STORAGE_KEY, JSON.stringify(followers));
-}
-
-// Save following
-function saveFollowing(following) {
-    localStorage.setItem(FOLLOWING_STORAGE_KEY, JSON.stringify(following));
-}
 
 // Follow a user
 function followUser(userId) {
@@ -292,7 +317,7 @@ function openPostsModal() {
     
     // Load posts from storage
     try {
-        const postsData = localStorage.getItem(POSTS_STORAGE_KEY);
+        const postsData = localStorage.getItem(getPostsStorageKey());
         const allPosts = postsData ? JSON.parse(postsData) : [];
         
         if (allPosts.length === 0) {
@@ -354,7 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Listen for storage changes to update posts when new ones are created
     window.addEventListener('storage', (e) => {
-        if (e.key === POSTS_STORAGE_KEY) {
+        const postsKey = getPostsStorageKey();
+        if (e.key === postsKey) {
             renderPosts();
             renderSavedPosts();
         }
@@ -389,7 +415,32 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPosts();
         updatePostsCount();
     }, 100);
+    
+    // Handle hash routing for modals (from home page clicks)
+    handleHashRouting();
 });
+
+// Handle hash routing to open appropriate modals
+function handleHashRouting() {
+    const hash = window.location.hash.substring(1); // Remove # from hash
+    
+    if (hash === 'followers') {
+        openFollowersModal();
+    } else if (hash === 'following') {
+        openFollowingModal();
+    } else if (hash === 'posts') {
+        // Switch to posts tab
+        const postsTabBtn = document.querySelector('[data-tab="posts"]');
+        if (postsTabBtn) {
+            postsTabBtn.click();
+        }
+    }
+    
+    // Clear the hash after handling
+    if (hash) {
+        window.history.replaceState(null, null, window.location.pathname);
+    }
+}
 
 // Storage functions
 function loadProfile() {
@@ -440,7 +491,7 @@ function saveProfile() {
 // Load posts from storage
 function loadPostsFromStorage() {
     try {
-        const raw = localStorage.getItem(POSTS_STORAGE_KEY);
+        const raw = localStorage.getItem(getPostsStorageKey());
         return raw ? JSON.parse(raw) : [];
     } catch (e) {
         return [];
@@ -487,8 +538,13 @@ function renderProfile() {
     document.getElementById('profileName').textContent = displayName;
     document.getElementById('profileUsername').textContent = displayUsername;
     document.getElementById('profileBio').textContent = profile.bio;
-    document.getElementById('followersCount').textContent = profile.followers;
-    document.getElementById('followingCount').textContent = profile.following;
+    
+    // Use actual counts from storage
+    const followers = getFollowers();
+    const following = getFollowing();
+    document.getElementById('followersCount').textContent = followers.length;
+    document.getElementById('followingCount').textContent = following.length;
+    
     updatePostsCount(); // Update posts count from actual posts
     document.getElementById('workInfo').textContent = profile.work;
     document.getElementById('educationInfo').textContent = profile.education;

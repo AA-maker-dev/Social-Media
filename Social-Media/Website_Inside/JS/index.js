@@ -75,11 +75,136 @@ function ensureCorrectLanding() {
 }
 
 // ===============================================
+// DATA MIGRATION & CORRUPTION FIX
+// ===============================================
+
+// Clean up corrupted post data - keeps only posts belonging to current user
+function cleanupCorruptedPostData() {
+    try {
+        const userSession = getUserSession();
+        if (!userSession || !userSession.id) return;
+        
+        const userKey = `nexora_posts_${userSession.id}`;
+        const postsData = localStorage.getItem(userKey);
+        
+        if (!postsData) return;
+        
+        try {
+            const posts = JSON.parse(postsData);
+            
+            // Filter to keep only posts where userId matches current user
+            const cleanPosts = posts.filter(post => post.userId === userSession.id);
+            
+            // If we removed posts (corruption detected), save the cleaned version
+            if (cleanPosts.length < posts.length) {
+                console.warn(`Cleaned up ${posts.length - cleanPosts.length} corrupted posts`);
+                localStorage.setItem(userKey, JSON.stringify(cleanPosts));
+                window.dispatchEvent(new Event('postsUpdated'));
+                return true; // Cleaned up corruption
+            }
+        } catch (e) {
+            console.error('Error cleaning posts:', e);
+        }
+    } catch (e) {
+        console.error('Error in cleanupCorruptedPostData:', e);
+    }
+    return false;
+}
+
+// Run cleanup on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', cleanupCorruptedPostData);
+} else {
+    cleanupCorruptedPostData();
+}
+
+// ===============================================
 // FOLLOW/UNFOLLOW SYSTEM
 // ===============================================
 
-const FOLLOWERS_STORAGE_KEY = 'nexora_followers';
-const FOLLOWING_STORAGE_KEY = 'nexora_following';
+
+// User-specific following/followers storage keys
+function getFollowingStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_following_${userSession.id}`;
+    }
+    return 'nexora_following_default';
+}
+
+function getFollowersStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_followers_${userSession.id}`;
+    }
+    return 'nexora_followers_default';
+}
+
+// Get following list for current user
+function getFollowing() {
+    try {
+        const key = getFollowingStorageKey();
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Get followers list for current user
+function getFollowers() {
+    try {
+        const key = getFollowersStorageKey();
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save following list for current user
+function saveFollowing(following) {
+    const key = getFollowingStorageKey();
+    localStorage.setItem(key, JSON.stringify(following));
+}
+
+// Save followers list for current user
+function saveFollowers(followers) {
+    const key = getFollowersStorageKey();
+    localStorage.setItem(key, JSON.stringify(followers));
+}
+
+// Add follower to a user's follower list (bidirectional)
+function addFollowerToUser(userId, currentUser) {
+    const followerKey = `nexora_followers_${userId}`;
+    try {
+        const raw = localStorage.getItem(followerKey);
+        let followers = raw ? JSON.parse(raw) : [];
+        
+        // Add current user as follower if not already
+        if (!followers.find(f => f.id === currentUser.id)) {
+            followers.push(currentUser);
+            localStorage.setItem(followerKey, JSON.stringify(followers));
+            // Dispatch event to notify that followers updated
+            window.dispatchEvent(new CustomEvent('followersUpdated', { detail: { userId } }));
+        }
+    } catch (e) {
+        console.error('Error adding follower:', e);
+    }
+}
+
+// Remove follower from a user's follower list
+function removeFollowerFromUser(userId, currentUserId) {
+    const followerKey = `nexora_followers_${userId}`;
+    try {
+        const raw = localStorage.getItem(followerKey);
+        let followers = raw ? JSON.parse(raw) : [];
+        followers = followers.filter(f => f.id !== currentUserId);
+        localStorage.setItem(followerKey, JSON.stringify(followers));
+    } catch (e) {
+        console.error('Error removing follower:', e);
+    }
+}
 
 // Available users to follow
 const availableUsers = [
@@ -91,30 +216,23 @@ const availableUsers = [
     { id: 'user6', name: 'Code Tips', username: '@codetips', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=', followers: '38K' },
 ];
 
-// Get following
-function getFollowing() {
-    try {
-        const raw = localStorage.getItem(FOLLOWING_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-// Save following
-function saveFollowing(following) {
-    localStorage.setItem(FOLLOWING_STORAGE_KEY, JSON.stringify(following));
-}
-
 // Follow a user
 function followUser(userId) {
     const following = getFollowing();
+    const userSession = getUserSession();
     const user = availableUsers.find(u => u.id === userId);
     
     if (user && !following.find(u => u.id === userId)) {
         following.push(user);
         saveFollowing(following);
-        renderSuggestedUsersHome();
+        
+        // Add current user as follower to the followed user (bidirectional)
+        if (userSession) {
+            addFollowerToUser(userId, userSession);
+        }
+        
+        renderSuggestedUsersHome().catch(e => console.error('Error refreshing suggestions:', e));
+        updateHomeProfile();
         return true;
     }
     return false;
@@ -123,9 +241,17 @@ function followUser(userId) {
 // Unfollow a user
 function unfollowUser(userId) {
     let following = getFollowing();
+    const userSession = getUserSession();
     following = following.filter(u => u.id !== userId);
     saveFollowing(following);
-    renderSuggestedUsersHome();
+    
+    // Remove current user from followed user's follower list (bidirectional)
+    if (userSession) {
+        removeFollowerFromUser(userId, userSession.id);
+    }
+    
+    renderSuggestedUsersHome().catch(e => console.error('Error refreshing suggestions:', e));
+    updateHomeProfile();
 }
 
 // Check if following a user
@@ -134,30 +260,76 @@ function isFollowing(userId) {
     return following.some(u => u.id === userId);
 }
 
+// Follow a user from suggestion (with backend user data)
+function followUserFromSuggestion(userId, userName, userUsername) {
+    const following = getFollowing();
+    const userSession = getUserSession();
+    
+    // Check if not already following
+    if (!following.find(u => u.id === userId)) {
+        // Add user to following list
+        const user = {
+            id: userId,
+            name: userName,
+            username: userUsername,
+            avatar: 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME='
+        };
+        following.push(user);
+        saveFollowing(following);
+        
+        // Add current user as follower to the followed user (bidirectional)
+        if (userSession) {
+            addFollowerToUser(userId, userSession);
+        }
+        
+        renderSuggestedUsersHome().catch(e => console.error('Error refreshing suggestions:', e));
+        updateHomeProfile();
+        return true;
+    }
+    return false;
+}
+
 // Render suggested users in home page
-function renderSuggestedUsersHome() {
+async function renderSuggestedUsersHome() {
     const container = document.getElementById('suggestedUsersHome');
     if (!container) return;
     
-    const following = getFollowing();
-    const followingIds = following.map(u => u.id);
-    
-    // Show users that are not being followed
-    const suggestedUsers = availableUsers.filter(u => !followingIds.includes(u.id)).slice(0, 3);
-    
-    if (suggestedUsers.length === 0) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);"><p>You\'re following everyone!</p></div>';
-    } else {
-        container.innerHTML = suggestedUsers.map(user => `
-            <div class="suggestion">
-                <img src="${user.avatar}" alt="${user.name}" class="avatar-sm">
-                <div style="flex: 1;">
-                    <h5>${user.name}</h5>
-                    <p><i class="fas fa-users" style="font-size: 10px; margin-right: 4px;"></i>${user.followers} followers · Suggested for you</p>
-                </div>
-                <button class="btn btn-small" onclick="followUser('${user.id}')">Follow</button>
-            </div>
-        `).join('');
+    try {
+        const following = getFollowing();
+        const followingIds = following.map(u => u.id);
+        const userSession = getUserSession();
+        const currentUserId = userSession?.id;
+        
+        // Fetch all registered users from backend
+        const response = await fetch('http://localhost:5000/api/users/');
+        const users = await response.json();
+        
+        // Filter: exclude current user and already followed users
+        const suggestedUsers = users
+            .filter(u => u.id !== currentUserId && !followingIds.includes(u.id))
+            .slice(0, 3);
+        
+        if (suggestedUsers.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);"><p>You\'re following everyone!</p></div>';
+        } else {
+            container.innerHTML = suggestedUsers.map(user => {
+                // Use default avatar if no profile picture available
+                const avatar = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+                return `
+                    <div class="suggestion">
+                        <img src="${avatar}" alt="${user.name}" class="avatar-sm">
+                        <div style="flex: 1;">
+                            <h5>${user.name}</h5>
+                            <p><i class="fas fa-users" style="font-size: 10px; margin-right: 4px;"></i>Recently joined · Suggested for you</p>
+                        </div>
+                        <button class="btn btn-small" onclick="followUserFromSuggestion('${user.id}', '${user.name}', '${user.username}')">Follow</button>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);"><p>Failed to load suggestions</p></div>';
     }
 }
 
@@ -228,11 +400,19 @@ function updateHomeProfile() {
     const posts = loadPostsForHome();
     const postsCount = posts.length;
     
+    // Get actual following count from storage
+    const followingList = getFollowing();
+    const followingCount = followingList.length;
+    
+    // Get actual followers count from storage
+    const followersList = getFollowers();
+    const followersCount = followersList.length;
+    
     if (profile) {
         if (nameEl) nameEl.textContent = profile.name || 'Tester';
         if (usernameEl) usernameEl.textContent = profile.username || '@admin';
-        if (followersEl) followersEl.textContent = profile.followers || '2.5K';
-        if (followingEl) followingEl.textContent = profile.following || '842';
+        if (followersEl) followersEl.textContent = followersCount; // Use dynamic count from storage
+        if (followingEl) followingEl.textContent = followingCount; // Use dynamic count
         if (postsEl) postsEl.textContent = postsCount;
         if (postInput) {
             postInput.placeholder = `What's on your mind, ${profile.name || 'Tester'}? Share your thoughts...`;
@@ -242,7 +422,7 @@ function updateHomeProfile() {
         if (nameEl) nameEl.textContent = userSession.name || 'User';
         if (usernameEl) usernameEl.textContent = userSession.username || '@user';
         if (followersEl) followersEl.textContent = '0';
-        if (followingEl) followingEl.textContent = '0';
+        if (followingEl) followingEl.textContent = followingCount; // Use dynamic count
         if (postsEl) postsEl.textContent = postsCount;
         if (postInput) {
             postInput.placeholder = `What's on your mind, ${userSession.name || 'User'}? Share your thoughts...`;
@@ -258,10 +438,32 @@ function updateHomeProfile() {
         sidebarAvatar.src = profilePicture;
     }
     
-    // Update post creator avatar
-    const postCreatorAvatar = document.querySelector('.post-creator .avatar-sm');
-    if (postCreatorAvatar) {
-        postCreatorAvatar.src = profilePicture;
+    // Add click handlers to profile stats
+    attachHomeStatsClickHandlers();
+}
+
+// Attach click handlers to profile stats
+function attachHomeStatsClickHandlers() {
+    const followersStat = document.getElementById('homeFollowersStat');
+    const followingStat = document.getElementById('homeFollowingStat');
+    const postsStat = document.getElementById('homePostsStat');
+    
+    if (followersStat) {
+        followersStat.addEventListener('click', () => {
+            window.location.href = 'profile.html#followers';
+        });
+    }
+    
+    if (followingStat) {
+        followingStat.addEventListener('click', () => {
+            window.location.href = 'profile.html#following';
+        });
+    }
+    
+    if (postsStat) {
+        postsStat.addEventListener('click', () => {
+            window.location.href = 'profile.html#posts';
+        });
     }
 }
 
@@ -386,7 +588,9 @@ function showReactionsBreakdown(reactions) {
 
 function loadPostsForHome() {
     try {
-        const raw = localStorage.getItem('nexora_posts_v1');
+        // Load current user's posts for their post count
+        const userKey = getUserPostsStorageKey();
+        const raw = localStorage.getItem(userKey);
         return raw ? JSON.parse(raw) : [];
     } catch (e) {
         return [];
@@ -417,7 +621,59 @@ window.addEventListener('focus', () => {
     updateHomeProfile();
 });
 
+// Listen for when current user gets a new follower
+window.addEventListener('followersUpdated', (e) => {
+    const currentUser = getUserSession();
+    if (currentUser && e.detail.userId === currentUser.id) {
+        updateHomeProfile();
+    }
+});
+
 // Post creation with image upload, persistence, edit/delete, and actions
+// User-specific post storage
+function getUserPostsStorageKey() {
+    const userSession = getUserSession();
+    if (userSession && userSession.id) {
+        return `nexora_posts_${userSession.id}`;
+    }
+    return 'nexora_posts_default';
+}
+
+// Get all posts from all users (for feed)
+function getAllUserPosts() {
+    try {
+        // Fetch from backend to get all posts from all users
+        // For now, return combined posts from localStorage
+        const allPosts = [];
+        
+        // Get posts from each user stored in localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('nexora_posts_')) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    try {
+                        const posts = JSON.parse(raw);
+                        allPosts.push(...posts);
+                    } catch (e) {
+                        console.error('Error parsing posts:', e);
+                    }
+                }
+            }
+        }
+        
+        // Sort by time, newest first
+        return allPosts.sort((a, b) => {
+            const timeA = a.time ? new Date(a.time).getTime() : 0;
+            const timeB = b.time ? new Date(b.time).getTime() : 0;
+            return timeB - timeA;
+        });
+    } catch (e) {
+        console.error('Error getting all posts:', e);
+        return [];
+    }
+}
+
 const STORAGE_KEY = 'nexora_posts_v1';
 
 // IndexedDB setup for storing images
@@ -473,8 +729,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load and update profile data on page load
     updateHomeProfile();
     
-    // Render suggested users in sidebar
-    renderSuggestedUsersHome();
+    // Render suggested users in sidebar (async, no need to await)
+    renderSuggestedUsersHome().catch(error => console.error('Error rendering suggestions:', error));
     
     const imageInput = document.getElementById('post-image');
     const thumbsContainer = document.getElementById('image-thumbs');
@@ -524,7 +780,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load and render stored posts (with images from IndexedDB)
-    let posts = loadPostsFromStorage();
+    // Load current user's posts and all other users' posts for feed
+    let posts = getAllUserPosts(); // Get all posts from all users for the feed
     
     // Restore images from IndexedDB
     loadPostsFromIndexedDB().then(indexedDBPosts => {
@@ -576,12 +833,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 userReactions: {},
                 author: userSession ? userSession.name : 'You',
-                authorUsername: userSession ? userSession.username : '@user'
+                authorUsername: userSession ? userSession.username : '@user',
+                userId: userSession ? userSession.id : 'default'
             };
 
             console.log('Creating post with', post.images.length, 'images');
-            posts.unshift(post);
-            savePostsToStorage(posts);
+            
+            // Save only to current user's posts
+            const userCurrentPosts = loadPostsFromStorage();
+            userCurrentPosts.unshift(post);
+            savePostsToStorage(userCurrentPosts);
+            
+            // Reload all posts from all users for feed
+            posts = getAllUserPosts();
+            
             renderPost(post, postsContainer, posts);
             
             // Dispatch event to update profile page if it's open
@@ -614,10 +879,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     clearPostsBtn && clearPostsBtn.addEventListener('click', () => {
-        if (!confirm('Clear all posts? This cannot be undone locally.')) return;
-        localStorage.removeItem(STORAGE_KEY);
-        posts.length = 0;
+        if (!confirm('Clear all your posts? This cannot be undone locally.')) return;
+        const userKey = getUserPostsStorageKey();
+        localStorage.removeItem(userKey);
+        // Reload all posts (excluding deleted user's posts)
+        posts = getAllUserPosts();
         postsContainer.innerHTML = '';
+        updateHomeProfile();
     });
 
     function renderThumbs() {
@@ -698,7 +966,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Storage helpers (inside DOMContentLoaded scope)
     function loadPostsFromStorage() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            // Load current user's posts
+            const userKey = getUserPostsStorageKey();
+            const raw = localStorage.getItem(userKey);
             const posts = raw ? JSON.parse(raw) : [];
             // Migrate old posts to have reactions object
             posts.forEach(post => {
@@ -729,14 +999,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function savePostsToStorage(postsArr) {
         try {
-            // Store post metadata in localStorage (without images)
+            // Store post metadata in localStorage (without images) - user-specific
             const postsForStorage = postsArr.map(post => ({
                 ...post,
                 images: [] // Don't store images in localStorage
             }));
             
+            const userKey = getUserPostsStorageKey();
             const jsonString = JSON.stringify(postsForStorage);
-            localStorage.setItem(STORAGE_KEY, jsonString);
+            localStorage.setItem(userKey, jsonString);
             
             // Store full posts with images in IndexedDB
             postsArr.forEach(post => {
@@ -761,12 +1032,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rendering
     function renderAllPosts(postsArr) {
         postsContainer.innerHTML = '';
-        // Sort posts by time (newest first)
+        // Sort posts by time ascending, then insert at top so newest ends up first
         const sortedPosts = [...postsArr].sort((a, b) => {
-            const timeA = new Date(a.time || 0).getTime();
-            const timeB = new Date(b.time || 0).getTime();
-            return timeB - timeA; // Descending order (newest first)
+            const timeA = a.time ? new Date(a.time).getTime() : 0;
+            const timeB = b.time ? new Date(b.time).getTime() : 0;
+            // If times are equal, use numeric ID (Date.now()) as tiebreaker
+            if (timeA === timeB) {
+                return (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0);
+            }
+            return timeA - timeB; // Ascending order (oldest first)
         });
+        // Using afterbegin in renderPost inserts each next item above the previous.
+        // Rendering oldest first results in newest staying at the top.
         sortedPosts.forEach(post => renderPost(post, postsContainer, postsArr));
     }
 
@@ -1068,10 +1345,20 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             menuDropdown.style.display = 'none';
             if (!confirm('Delete this post?')) return;
-            const i = postsArr.findIndex(p => p.id === post.id);
+            
+            // Only delete if this is the current user's post
+            const userSession = getUserSession();
+            if (post.userId !== userSession.id) {
+                alert('You can only delete your own posts');
+                return;
+            }
+            
+            // Remove from current user's posts only
+            const currentUserPosts = loadPostsForHome();
+            const i = currentUserPosts.findIndex(p => p.id === post.id);
             if (i > -1) {
-                postsArr.splice(i, 1);
-                savePostsToStorage(postsArr);
+                currentUserPosts.splice(i, 1);
+                savePostsToStorage(currentUserPosts);
                 postEl.remove();
                 // Update posts count on home page
                 updateHomeProfile();
@@ -1117,7 +1404,26 @@ document.addEventListener('DOMContentLoaded', () => {
         function saveAndRefresh(id) {
             const idx = postsArr.findIndex(p => p.id === id);
             if (idx > -1) postsArr[idx] = post;
-            savePostsToStorage(postsArr);
+            
+            // Save the post to the owner's storage (whoever created the post)
+            // This ensures reactions/likes persist even when reacting to others' posts
+            const postOwnerId = post.userId;
+            const postOwnerKey = `nexora_posts_${postOwnerId}`;
+            
+            try {
+                const ownerPostsData = localStorage.getItem(postOwnerKey);
+                if (ownerPostsData) {
+                    const ownerPosts = JSON.parse(ownerPostsData);
+                    const postIdx = ownerPosts.findIndex(p => p.id === id);
+                    if (postIdx > -1) {
+                        ownerPosts[postIdx] = post;
+                        localStorage.setItem(postOwnerKey, JSON.stringify(ownerPosts));
+                        window.dispatchEvent(new Event('postsUpdated'));
+                    }
+                }
+            } catch (e) {
+                console.error('Error saving reaction:', e);
+            }
 
             // Update reactions display
             const statsEl = postEl.querySelector('.post-stats');

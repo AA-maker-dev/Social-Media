@@ -725,9 +725,14 @@ function renderSavedPosts() {
 
 // Setup event listeners
 function setupEventListeners() {
-    try {
-        // Tab buttons
-        const tabBtns = document.querySelectorAll('.tab-btn');
+    // Tab buttons
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            switchTab(tab);
+        });
+    });
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const tab = btn.dataset.tab;

@@ -575,8 +575,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`🖼️ Creating thumbnail ${idx + 1}/${selectedImages.length}`);
                 const t = document.createElement('div');
                 t.className = 'thumb';
-                t.style.cssText = 'position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary-color);'
-                t.innerHTML = `<img src="${dataUrl}" alt="thumb ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;"><button class="thumb-remove" data-index="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;"><i class="fas fa-times"></i></button>`;\n                row.appendChild(t);\n            });\n            \n            thumbsContainer.appendChild(row);\n            console.log('🖼️ Thumbnails rendered successfully!');\n\n            // Attach remove handlers\n            thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {\n                btn.addEventListener('click', (e) => {\n                    e.preventDefault();\n                    const i = parseInt(btn.getAttribute('data-index'));\n                    if (!isNaN(i)) {\n                        console.log('🖼️ Removing image at index', i);\n                        selectedImages.splice(i, 1);\n                        renderThumbs();\n                    }\n                });\n            });\n        }
+                t.style.cssText = 'position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary-color);';
+                t.innerHTML = `<img src="${dataUrl}" alt="thumb ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;"><button class="thumb-remove" data-index="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;"><i class="fas fa-times"></i></button>`;
+                row.appendChild(t);
+            });
+            
+            thumbsContainer.appendChild(row);
+            console.log('🖼️ Thumbnails rendered successfully!');
+
+            // Attach remove handlers
+            thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const i = parseInt(btn.getAttribute('data-index'));
+                    if (!isNaN(i)) {
+                        console.log('🖼️ Removing image at index', i);
+                        selectedImages.splice(i, 1);
+                        renderThumbs();
+                    }
+                });
+            });
+        }
 
         // Helper function to attach change listener to image input
         function attachImageInputListener(input) {
@@ -696,6 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Attach post button click handler (OUTSIDE promise chain)
         postBtn && postBtn.addEventListener('click', () => {
             try {
                 // Check if user is logged in
@@ -707,12 +727,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 console.log('Post button clicked');
-                const caption = (captionInput && captionInput.value || '').trim();
-                console.log('Caption:', caption);
+                // Re-select caption input to ensure we have the latest reference
+                const currentCaptionInput = captionInput || document.getElementById('postInput') || document.querySelector('.post-input');
+                const captionValue = currentCaptionInput ? currentCaptionInput.value : '';
+                const caption = (captionValue || '').trim();
+                console.log('Caption input element:', currentCaptionInput);
+                console.log('Caption input value:', captionValue);
+                console.log('Caption after trim:', caption);
                 console.log('Selected images count:', selectedImages.length);
                 
                 if (!caption && selectedImages.length === 0) {
                     alert('Please add a caption or image to post.');
+                    console.warn('⚠️ No caption or images');
                     return;
                 }
 
@@ -766,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset form
                 selectedImages = [];
                 renderThumbs();
-                if (captionInput) captionInput.value = '';
+                if (currentCaptionInput) currentCaptionInput.value = '';
                 
                 // Reset file input
                 if (currentImageInput) {
@@ -1398,8 +1424,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
+    
+    } catch (err) {
+        console.error('Error in DOMContentLoaded:', err);
+    }
 
-    function timeAgoShort(iso) {
+});
+
+function timeAgoShort(iso) {
         try {
             const diff = Date.now() - new Date(iso).getTime();
             const mins = Math.floor(diff / 60000);
@@ -1414,11 +1446,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function escapeHtml(text) {
-        return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
-    }
-
-});
+function escapeHtml(text) {
+    return (text || '').replace(/[&"'<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[m]);
+}
 
 // Keep chat setup if present in page
 document.addEventListener('DOMContentLoaded', () => {

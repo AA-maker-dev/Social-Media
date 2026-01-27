@@ -70,7 +70,7 @@ function showSuccessAnimation() {
 }
 
 // Form validation and login handler
-function validateAndLogin(event) {
+async function validateAndLogin(event) {
     event.preventDefault();
     
     const email = document.getElementById('email').value.trim();
@@ -105,41 +105,58 @@ function validateAndLogin(event) {
         return;
     }
     
-    // Authenticate user
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        // Store user session
-        const userRole = user.role || 'customer';
-        const userSession = {
-            email: user.email,
-            name: user.name,
-            username: user.username,
-            role: userRole,
-            loginTime: new Date().toISOString()
-        };
+    try {
+        // Show loading state
+        const button = document.querySelector('form button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         
-        // Save to localStorage
-        localStorage.setItem('userSession', JSON.stringify(userSession));
+        // Call backend API
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Login failed');
+        }
+        
+        // Store token and user session
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userSession', JSON.stringify(data.user));
         
         if (remember) {
-            localStorage.setItem('rememberUser', JSON.stringify({ email: user.email }));
+            localStorage.setItem('rememberUser', JSON.stringify({ email: data.user.email }));
         }
         
         // Show success message
-        showSuccessAnimation();
+        button.innerHTML = '<i class="fas fa-check"></i> Success!';
+        button.style.background = 'linear-gradient(135deg, #17BF63, #10a04a)';
         
         // Redirect to dashboard after 1 second
         setTimeout(() => {
-            window.location.href = getLandingPageForRole(userRole);
+            window.location.href = getLandingPageForRole(data.user.role);
         }, 1000);
-    } else {
-        showError('emailError', 'Invalid email or password');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showError('emailError', error.message || 'Invalid email or password');
+        
+        // Reset button
+        const button = document.querySelector('form button');
+        button.disabled = false;
+        button.innerHTML = 'LOGIN';
     }
 }
 
 // Form validation and signup handler
-function validateAndSignup(event) {
+async function validateAndSignup(event) {
     event.preventDefault();
     
     const name = document.getElementById('signupName').value.trim();
@@ -170,9 +187,6 @@ function validateAndSignup(event) {
     } else if (!isValidEmail(email)) {
         showError('emailError2', 'Please enter a valid email address');
         isValid = false;
-    } else if (users.find(u => u.email === email)) {
-        showError('emailError2', 'Email already registered. Try logging in instead!');
-        isValid = false;
     }
     
     // Validate username
@@ -184,9 +198,6 @@ function validateAndSignup(event) {
         isValid = false;
     } else if (!/^@?[a-zA-Z0-9_]{3,}$/.test(username.replace('@', ''))) {
         showError('usernameError', 'Username can only contain letters, numbers, and underscores');
-        isValid = false;
-    } else if (users.find(u => u.username === '@' + username.replace('@', ''))) {
-        showError('usernameError', 'Username already taken. Try another one!');
         isValid = false;
     }
     
@@ -221,33 +232,68 @@ function validateAndSignup(event) {
         return;
     }
     
-    // Create new user
-    const newUser = {
-        email: email,
-        password: password,
-        name: name,
-        username: '@' + username.replace('@', ''),
-        role: 'customer'
-    };
-    
-    users.push(newUser);
-    
-    // Save updated users database to localStorage
-    saveUsers(users);
-    
-    // Show success message
-    const signupBtn = document.querySelector('#signupForm button');
-    signupBtn.disabled = true;
-    signupBtn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
-    signupBtn.style.background = 'linear-gradient(135deg, #17BF63, #10a04a)';
-    
-    // Close modal and show success toast
-    setTimeout(() => {
-        closeSignupModal();
-        showSignupSuccess(name);
-        // Clear form
-        document.getElementById('signupForm').reset();
-    }, 1000);
+    try {
+        // Show loading state
+        const signupBtn = document.querySelector('#signupForm button');
+        const originalText = signupBtn.innerHTML;
+        signupBtn.disabled = true;
+        signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        
+        // Remove @ from username if present (backend will add it)
+        const cleanUsername = username.replace('@', '');
+        
+        // Call backend API
+        const response = await fetch('http://localhost:5000/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, name, username: cleanUsername })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Signup failed');
+        }
+        
+        // Store token and user session
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userSession', JSON.stringify(data.user));
+        
+        // Show success message
+        signupBtn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
+        signupBtn.style.background = 'linear-gradient(135deg, #17BF63, #10a04a)';
+        
+        // Close modal and show success toast
+        setTimeout(() => {
+            closeSignupModal();
+            showSignupSuccess(name);
+            // Clear form
+            document.getElementById('signupForm').reset();
+            signupBtn.disabled = false;
+            signupBtn.innerHTML = originalText;
+            signupBtn.style.background = '';
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Signup error:', error);
+        
+        // Show appropriate error
+        if (error.message.includes('email')) {
+            showError('emailError2', error.message);
+        } else if (error.message.includes('username')) {
+            showError('usernameError', error.message);
+        } else {
+            showError('emailError2', error.message || 'Signup failed. Please try again.');
+        }
+        
+        // Reset button
+        const signupBtn = document.querySelector('#signupForm button');
+        signupBtn.disabled = false;
+        signupBtn.innerHTML = 'CREATE ACCOUNT';
+        signupBtn.style.background = '';
+    }
 }
 
 // Show signup modal

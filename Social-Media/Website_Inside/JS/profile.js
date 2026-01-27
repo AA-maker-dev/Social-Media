@@ -136,12 +136,215 @@ const samplePhotos = [
 
 let profile = loadProfile();
 
+// ===================================
+// FOLLOWERS, FOLLOWING, AND POSTS MODALS
+// ===================================
+
+// Follow/Unfollow System Storage
+const FOLLOWERS_STORAGE_KEY = 'nexora_followers';
+const FOLLOWING_STORAGE_KEY = 'nexora_following';
+
+// Available users to follow (simulated users)
+const availableUsers = [
+    { id: 'user1', name: 'John Developer', username: '@johndev', avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=' },
+    { id: 'user2', name: 'Sarah Designer', username: '@sarahdesign', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=' },
+    { id: 'user3', name: 'Mike Tech', username: '@miketech', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=' },
+    { id: 'user4', name: 'React Masters', username: '@reactmasters', avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=' },
+    { id: 'user5', name: 'Web Dev Daily', username: '@webdevdaily', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=' },
+    { id: 'user6', name: 'Code Tips', username: '@codetips', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=' },
+];
+
+// Get followers
+function getFollowers() {
+    try {
+        const raw = localStorage.getItem(FOLLOWERS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Get following
+function getFollowing() {
+    try {
+        const raw = localStorage.getItem(FOLLOWING_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save followers
+function saveFollowers(followers) {
+    localStorage.setItem(FOLLOWERS_STORAGE_KEY, JSON.stringify(followers));
+}
+
+// Save following
+function saveFollowing(following) {
+    localStorage.setItem(FOLLOWING_STORAGE_KEY, JSON.stringify(following));
+}
+
+// Follow a user
+function followUser(userId) {
+    const following = getFollowing();
+    const user = availableUsers.find(u => u.id === userId);
+    
+    if (user && !following.find(u => u.id === userId)) {
+        following.push(user);
+        saveFollowing(following);
+        updateFollowCounts();
+        return true;
+    }
+    return false;
+}
+
+// Unfollow a user
+function unfollowUser(userId) {
+    let following = getFollowing();
+    following = following.filter(u => u.id !== userId);
+    saveFollowing(following);
+    updateFollowCounts();
+}
+
+// Check if following a user
+function isFollowing(userId) {
+    const following = getFollowing();
+    return following.some(u => u.id === userId);
+}
+
+// Update follow counts
+function updateFollowCounts() {
+    const followers = getFollowers();
+    const following = getFollowing();
+    
+    profile.followers = followers.length.toString();
+    profile.following = following.length.toString();
+    
+    saveProfile();
+    renderProfile();
+}
+
+function openFollowersModal() {
+    const modal = document.getElementById('followersModal');
+    const followersList = document.getElementById('followersList');
+    
+    const followers = getFollowers();
+    
+    if (followers.length === 0) {
+        followersList.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No followers yet</p></div>';
+    } else {
+        followersList.innerHTML = followers.map(follower => `
+            <div class="user-item">
+                <img src="${follower.avatar}" alt="${follower.name}">
+                <div class="user-info">
+                    <p class="user-name">${follower.name}</p>
+                    <p class="user-username">${follower.username}</p>
+                </div>
+                <button class="btn btn-small" onclick="event.stopPropagation();" style="padding: 6px 16px; font-size: 13px;">
+                    ${isFollowing(follower.id) ? 'Following' : 'Follow Back'}
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    modal.classList.add('active');
+}
+
+function closeFollowersModal() {
+    const modal = document.getElementById('followersModal');
+    modal.classList.remove('active');
+}
+
+function openFollowingModal() {
+    const modal = document.getElementById('followingModal');
+    const followingList = document.getElementById('followingList');
+    
+    const following = getFollowing();
+    
+    if (following.length === 0) {
+        followingList.innerHTML = '<div class="empty-state"><i class="fas fa-user-plus"></i><p>Not following anyone yet</p></div>';
+    } else {
+        followingList.innerHTML = following.map(user => `
+            <div class="user-item">
+                <img src="${user.avatar}" alt="${user.name}">
+                <div class="user-info">
+                    <p class="user-name">${user.name}</p>
+                    <p class="user-username">${user.username}</p>
+                </div>
+                <button class="btn btn-small btn-danger" onclick="unfollowUser('${user.id}'); openFollowingModal();" style="padding: 6px 16px; font-size: 13px; background: #e1e8ed; color: #14171a;">
+                    Unfollow
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    modal.classList.add('active');
+}
+
+function closeFollowingModal() {
+    const modal = document.getElementById('followingModal');
+    modal.classList.remove('active');
+}
+
+function openPostsModal() {
+    const modal = document.getElementById('postsModal');
+    const postsList = document.getElementById('postsList');
+    
+    // Load posts from storage
+    try {
+        const postsData = localStorage.getItem(POSTS_STORAGE_KEY);
+        const allPosts = postsData ? JSON.parse(postsData) : [];
+        
+        if (allPosts.length === 0) {
+            postsList.innerHTML = '<div class="empty-state"><i class="fas fa-pen-fancy"></i><p>No posts yet</p></div>';
+        } else {
+            postsList.innerHTML = allPosts.map(post => `
+                <div class="post-preview" style="padding: 15px; border-bottom: 1px solid #e1e8ed; cursor: pointer;">
+                    <div style="display: flex; gap: 12px; margin-bottom: 10px;">
+                        <img src="${DEFAULT_AVATAR_URL}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-weight: 600; color: #000;">${post.author || 'You'}</p>
+                            <p style="margin: 0; color: #657786; font-size: 12px;">${post.authorUsername || '@user'}</p>
+                        </div>
+                    </div>
+                    <p style="margin: 10px 0; color: #000; line-height: 1.5;">${post.caption}</p>
+                    ${post.images && post.images.length > 0 ? `
+                        <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(${Math.min(post.images.length, 2)}, 1fr); gap: 8px;">
+                            ${post.images.slice(0, 4).map(img => `
+                                <img src="${img}" alt="Post image" style="width: 100%; height: 150px; border-radius: 10px; object-fit: cover;">
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div style="margin-top: 10px; color: #657786; font-size: 12px;">
+                        <i class="fas fa-heart"></i> ${post.reactions?.like || 0} Likes
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        console.error('Error loading posts:', e);
+        postsList.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading posts</p></div>';
+    }
+    
+    modal.classList.add('active');
+}
+
+function closePostsModal() {
+    const modal = document.getElementById('postsModal');
+    modal.classList.remove('active');
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Reload profile to apply fixes
+    profile = loadProfile();
+    
     if (Object.keys(profile).length === 0) {
         profile = defaultProfile;
-        saveProfile();
     }
+    
+    // Save profile to ensure defaults are stored
+    saveProfile();
     
     renderProfile();
     setupEventListeners();
@@ -196,6 +399,10 @@ function loadProfile() {
         const raw = localStorage.getItem(storageKey);
         const profile = raw ? JSON.parse(raw) : {};
         
+        // Get real followers and following counts
+        const followers = getFollowers();
+        const following = getFollowing();
+        
         // If no profile exists, create default one with session data
         if (Object.keys(profile).length === 0 && userSession) {
             return {
@@ -207,13 +414,18 @@ function loadProfile() {
                 location: 'Not specified',
                 website: 'www.example.com',
                 joined: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
-                followers: '0',
-                following: '0',
+                followers: followers.length.toString(),
+                following: following.length.toString(),
                 posts: '0',
                 profilePicture: null,
                 coverImage: null
             };
         }
+        
+        // Update with real counts
+        profile.followers = followers.length.toString();
+        profile.following = following.length.toString();
+        
         return profile;
     } catch (e) {
         return {};
@@ -614,6 +826,63 @@ function setupEventListeners() {
             alert('No cover image to remove. Click the camera icon to add one!');
         }
     });
+    
+    // Stat card click handlers
+    const followersCard = document.getElementById('followersCard');
+    const followingCard = document.getElementById('followingCard');
+    const postsCard = document.getElementById('postsCard');
+    
+    if (followersCard) {
+        followersCard.addEventListener('click', openFollowersModal);
+    }
+    if (followingCard) {
+        followingCard.addEventListener('click', openFollowingModal);
+    }
+    if (postsCard) {
+        postsCard.addEventListener('click', openPostsModal);
+    }
+    
+    // Modal close buttons
+    const followersModalClose = document.getElementById('followersModalClose');
+    const followingModalClose = document.getElementById('followingModalClose');
+    const postsModalClose = document.getElementById('postsModalClose');
+    
+    if (followersModalClose) {
+        followersModalClose.addEventListener('click', closeFollowersModal);
+    }
+    if (followingModalClose) {
+        followingModalClose.addEventListener('click', closeFollowingModal);
+    }
+    if (postsModalClose) {
+        postsModalClose.addEventListener('click', closePostsModal);
+    }
+    
+    // Close modal on outside click
+    const followersModal = document.getElementById('followersModal');
+    const followingModal = document.getElementById('followingModal');
+    const postsModal = document.getElementById('postsModal');
+    
+    if (followersModal) {
+        followersModal.addEventListener('click', (e) => {
+            if (e.target === followersModal) {
+                closeFollowersModal();
+            }
+        });
+    }
+    if (followingModal) {
+        followingModal.addEventListener('click', (e) => {
+            if (e.target === followingModal) {
+                closeFollowingModal();
+            }
+        });
+    }
+    if (postsModal) {
+        postsModal.addEventListener('click', (e) => {
+            if (e.target === postsModal) {
+                closePostsModal();
+            }
+        });
+    }
 }
 
 // Switch tab
@@ -636,6 +905,37 @@ function switchTab(tab) {
         updatePostsCount();
     } else if (tab === 'saved') {
         renderSavedPosts();
+    } else if (tab === 'people') {
+        renderSuggestedUsers();
+    }
+}
+
+// Render suggested users in People tab
+function renderSuggestedUsers() {
+    const container = document.getElementById('suggestedUsers');
+    if (!container) return;
+    
+    const following = getFollowing();
+    const followingIds = following.map(u => u.id);
+    
+    // Show users that are not being followed
+    const suggestedUsers = availableUsers.filter(u => !followingIds.includes(u.id));
+    
+    if (suggestedUsers.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>You\'re following everyone!</p></div>';
+    } else {
+        container.innerHTML = suggestedUsers.map(user => `
+            <div class="user-item" style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                <img src="${user.avatar}" alt="${user.name}">
+                <div class="user-info">
+                    <p class="user-name">${user.name}</p>
+                    <p class="user-username">${user.username}</p>
+                </div>
+                <button class="btn btn-primary" onclick="followUser('${user.id}'); renderSuggestedUsers(); updateFollowCounts();" style="padding: 6px 20px; font-size: 13px;">
+                    Follow
+                </button>
+            </div>
+        `).join('');
     }
 }
 
@@ -783,4 +1083,3 @@ logoutBtn.addEventListener("click", () => {
     localStorage.clear();
     /z:/Social-Media/Social-Media/Login/login.html
 });
-

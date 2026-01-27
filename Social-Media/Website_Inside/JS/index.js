@@ -75,6 +75,94 @@ function ensureCorrectLanding() {
 }
 
 // ===============================================
+// FOLLOW/UNFOLLOW SYSTEM
+// ===============================================
+
+const FOLLOWERS_STORAGE_KEY = 'nexora_followers';
+const FOLLOWING_STORAGE_KEY = 'nexora_following';
+
+// Available users to follow
+const availableUsers = [
+    { id: 'user1', name: 'John Developer', username: '@johndev', avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=', followers: '12.5K' },
+    { id: 'user2', name: 'Sarah Designer', username: '@sarahdesign', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=', followers: '8.2K' },
+    { id: 'user3', name: 'Mike Tech', username: '@miketech', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=', followers: '25.8K' },
+    { id: 'user4', name: 'React Masters', username: '@reactmasters', avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=', followers: '45K' },
+    { id: 'user5', name: 'Web Dev Daily', username: '@webdevdaily', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=', followers: '92K' },
+    { id: 'user6', name: 'Code Tips', username: '@codetips', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=', followers: '38K' },
+];
+
+// Get following
+function getFollowing() {
+    try {
+        const raw = localStorage.getItem(FOLLOWING_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save following
+function saveFollowing(following) {
+    localStorage.setItem(FOLLOWING_STORAGE_KEY, JSON.stringify(following));
+}
+
+// Follow a user
+function followUser(userId) {
+    const following = getFollowing();
+    const user = availableUsers.find(u => u.id === userId);
+    
+    if (user && !following.find(u => u.id === userId)) {
+        following.push(user);
+        saveFollowing(following);
+        renderSuggestedUsersHome();
+        return true;
+    }
+    return false;
+}
+
+// Unfollow a user
+function unfollowUser(userId) {
+    let following = getFollowing();
+    following = following.filter(u => u.id !== userId);
+    saveFollowing(following);
+    renderSuggestedUsersHome();
+}
+
+// Check if following a user
+function isFollowing(userId) {
+    const following = getFollowing();
+    return following.some(u => u.id === userId);
+}
+
+// Render suggested users in home page
+function renderSuggestedUsersHome() {
+    const container = document.getElementById('suggestedUsersHome');
+    if (!container) return;
+    
+    const following = getFollowing();
+    const followingIds = following.map(u => u.id);
+    
+    // Show users that are not being followed
+    const suggestedUsers = availableUsers.filter(u => !followingIds.includes(u.id)).slice(0, 3);
+    
+    if (suggestedUsers.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);"><p>You\'re following everyone!</p></div>';
+    } else {
+        container.innerHTML = suggestedUsers.map(user => `
+            <div class="suggestion">
+                <img src="${user.avatar}" alt="${user.name}" class="avatar-sm">
+                <div style="flex: 1;">
+                    <h5>${user.name}</h5>
+                    <p><i class="fas fa-users" style="font-size: 10px; margin-right: 4px;"></i>${user.followers} followers · Suggested for you</p>
+                </div>
+                <button class="btn btn-small" onclick="followUser('${user.id}')">Follow</button>
+            </div>
+        `).join('');
+    }
+}
+
+
+// ===============================================
 // SIMPLIFIED JS FOR INDEX PAGE
 // ===============================================
 
@@ -332,6 +420,51 @@ window.addEventListener('focus', () => {
 // Post creation with image upload, persistence, edit/delete, and actions
 const STORAGE_KEY = 'nexora_posts_v1';
 
+// IndexedDB setup for storing images
+const DB_NAME = 'nexora_db';
+const STORE_NAME = 'posts_store';
+
+async function initIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+    });
+}
+
+async function savePostToIndexedDB(post) {
+    try {
+        const db = await initIndexedDB();
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        await store.put(post);
+    } catch (e) {
+        console.warn('IndexedDB not available, falling back to localStorage:', e);
+    }
+}
+
+async function loadPostsFromIndexedDB() {
+    try {
+        const db = await initIndexedDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+        });
+    } catch (e) {
+        console.warn('IndexedDB not available:', e);
+        return [];
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     ensureCorrectLanding();
     // Update navbar authentication UI
@@ -340,10 +473,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load and update profile data on page load
     updateHomeProfile();
     
+    // Render suggested users in sidebar
+    renderSuggestedUsersHome();
+    
     const imageInput = document.getElementById('post-image');
     const thumbsContainer = document.getElementById('image-thumbs');
     const postBtn = document.getElementById('post-btn');
-    const captionInput = document.getElementById('post-caption') || document.querySelector('.post-input');
+    const captionInput = document.getElementById('postInput') || document.getElementById('post-caption') || document.querySelector('.post-input');
     const postsContainer = document.getElementById('posts-container');
     const clearPostsBtn = document.getElementById('clear-posts');
 
@@ -387,69 +523,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Load and render stored posts
-    const posts = loadPostsFromStorage();
-    renderAllPosts(posts);
+    // Load and render stored posts (with images from IndexedDB)
+    let posts = loadPostsFromStorage();
+    
+    // Restore images from IndexedDB
+    loadPostsFromIndexedDB().then(indexedDBPosts => {
+        const indexedDBMap = {};
+        indexedDBPosts.forEach(post => {
+            indexedDBMap[post.id] = post.images;
+        });
+        
+        // Merge images back into posts
+        posts.forEach(post => {
+            if (indexedDBMap[post.id]) {
+                post.images = indexedDBMap[post.id];
+            }
+        });
+        
+        renderAllPosts(posts);
+    }).catch(e => {
+        console.error('Error loading posts from IndexedDB:', e);
+        renderAllPosts(posts);
+    });
 
     postBtn && postBtn.addEventListener('click', () => {
-        console.log('Post button clicked');
-        console.log('selectedImages.length:', selectedImages.length);
-        console.log('caption:', captionInput?.value);
-        const caption = (captionInput && captionInput.value || '').trim();
-        if (!caption && selectedImages.length === 0) {
-            alert('Please add a caption or image to post.');
-            return;
-        }
+        try {
+            console.log('Post button clicked');
+            console.log('selectedImages.length:', selectedImages.length);
+            console.log('caption:', captionInput?.value);
+            const caption = (captionInput && captionInput.value || '').trim();
+            if (!caption && selectedImages.length === 0) {
+                alert('Please add a caption or image to post.');
+                return;
+            }
 
-        const userSession = getUserSession();
-        const post = {
-            id: Date.now().toString(),
-            caption: caption,
-            images: selectedImages.slice(),
-            likes: 0,
-            shares: 0,
-            bookmarked: false,
-            time: new Date().toISOString(),
-            reactions: {
-                like: 0,
-                love: 0,
-                wow: 0,
-                heartEyes: 0,
-                party: 0,
-                fire: 0
-            },
-            userReactions: {},
-            author: userSession ? userSession.name : 'You',
-            authorUsername: userSession ? userSession.username : '@user'
-        };
+            const userSession = getUserSession();
+            const post = {
+                id: Date.now().toString(),
+                caption: caption,
+                images: selectedImages.slice(),
+                likes: 0,
+                shares: 0,
+                bookmarked: false,
+                time: new Date().toISOString(),
+                reactions: {
+                    like: 0,
+                    love: 0,
+                    wow: 0,
+                    heartEyes: 0,
+                    party: 0,
+                    fire: 0
+                },
+                userReactions: {},
+                author: userSession ? userSession.name : 'You',
+                authorUsername: userSession ? userSession.username : '@user'
+            };
 
-        console.log('Creating post with', post.images.length, 'images');
-        posts.unshift(post);
-        savePostsToStorage(posts);
-        renderPost(post, postsContainer, posts);
-        
-        // Dispatch event to update profile page if it's open
-        console.log('Dispatching postsUpdated event');
-        window.dispatchEvent(new Event('postsUpdated'));
-        
-        // Also update posts count on home page
-        updateHomeProfile();
+            console.log('Creating post with', post.images.length, 'images');
+            posts.unshift(post);
+            savePostsToStorage(posts);
+            renderPost(post, postsContainer, posts);
+            
+            // Dispatch event to update profile page if it's open
+            console.log('Dispatching postsUpdated event');
+            window.dispatchEvent(new Event('postsUpdated'));
+            
+            // Also update posts count on home page
+            updateHomeProfile();
 
-        // reset
-        selectedImages = [];
-        renderThumbs();
-        if (captionInput) captionInput.value = '';
-        console.log('Resetting file input');
-        // Reset file input - create a new input element to allow same file selection
-        if (currentImageInput) {
-            console.log('Old input:', currentImageInput);
-            const newInput = currentImageInput.cloneNode(true);
-            currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
-            currentImageInput = newInput;
-            console.log('New input:', currentImageInput);
-            attachImageInputListener(currentImageInput);
-        } else {
-            console.warn('currentImageInput is null/undefined during reset');
+            // reset
+            selectedImages = [];
+            renderThumbs();
+            if (captionInput) captionInput.value = '';
+            console.log('Resetting file input');
+            // Reset file input - create a new input element to allow same file selection
+            if (currentImageInput) {
+                console.log('Old input:', currentImageInput);
+                const newInput = currentImageInput.cloneNode(true);
+                currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
+                currentImageInput = newInput;
+                console.log('New input:', currentImageInput);
+                attachImageInputListener(currentImageInput);
+            } else {
+                console.warn('currentImageInput is null/undefined during reset');
+            }
+        } catch (error) {
+            console.error('Error creating post:', error);
+            alert('Error posting: ' + error.message);
         }
     });
 
@@ -493,7 +653,43 @@ document.addEventListener('DOMContentLoaded', () => {
     function fileToDataURL(file) {
         return new Promise((res, rej) => {
             const reader = new FileReader();
-            reader.onload = () => res(reader.result);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Create canvas and resize image aggressively
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // More aggressive sizing
+                    const maxWidth = 600;
+                    const maxHeight = 600;
+                    
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to data URL with aggressive compression (0.5 quality)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    res(dataUrl);
+                };
+                img.onerror = rej;
+                img.src = e.target.result;
+            };
             reader.onerror = rej;
             reader.readAsDataURL(file);
         });
@@ -532,9 +728,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function savePostsToStorage(postsArr) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArr));
-        // Dispatch event to update profile page if it's open
-        window.dispatchEvent(new Event('postsUpdated'));
+        try {
+            // Store post metadata in localStorage (without images)
+            const postsForStorage = postsArr.map(post => ({
+                ...post,
+                images: [] // Don't store images in localStorage
+            }));
+            
+            const jsonString = JSON.stringify(postsForStorage);
+            localStorage.setItem(STORAGE_KEY, jsonString);
+            
+            // Store full posts with images in IndexedDB
+            postsArr.forEach(post => {
+                if (post.images && post.images.length > 0) {
+                    savePostToIndexedDB(post);
+                }
+            });
+            
+            // Dispatch event to update profile page if it's open
+            window.dispatchEvent(new Event('postsUpdated'));
+        } catch (e) {
+            console.error('Error saving posts to storage:', e);
+            if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                alert('Storage quota exceeded. Please clear your browser storage or use fewer/smaller images.');
+            } else {
+                alert('Error saving post: ' + e.message);
+            }
+            throw e;
+        }
     }
 
     // Rendering

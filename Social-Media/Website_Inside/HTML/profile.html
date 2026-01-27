@@ -62,15 +62,15 @@
                     </div>
                     
                     <div class="profile-stats-section">
-                        <div class="stat-card">
+                        <div class="stat-card" id="followersCard">
                             <span class="stat-value" id="followersCount">2.5K</span>
                             <span class="stat-label">Followers</span>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" id="followingCard">
                             <span class="stat-value" id="followingCount">842</span>
                             <span class="stat-label">Following</span>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" id="postsCard">
                             <span class="stat-value" id="postsCount">156</span>
                             <span class="stat-label">Posts</span>
                         </div>
@@ -102,6 +102,9 @@
             </button>
             <button class="tab-btn" data-tab="about">
                 <i class="fas fa-user"></i> About
+            </button>
+            <button class="tab-btn" data-tab="people">
+                <i class="fas fa-user-friends"></i> People
             </button>
             <button class="tab-btn" data-tab="photos">
                 <i class="fas fa-images"></i> Photos
@@ -170,6 +173,18 @@
                             <span class="interest-tag">React</span>
                             <span class="interest-tag">JavaScript</span>
                             <span class="interest-tag">Open Source</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- People Tab -->
+            <div class="tab-pane" id="peopleTab">
+                <div class="about-section">
+                    <div class="about-card">
+                        <h3><i class="fas fa-user-friends"></i> Suggested For You</h3>
+                        <div id="suggestedUsers" class="user-list" style="gap: 0;">
+                            <!-- Suggested users will be dynamically inserted here -->
                         </div>
                     </div>
                 </div>
@@ -283,6 +298,50 @@
         </div>
     </div>
 
+    <!-- Followers Modal -->
+    <div class="modal" id="followersModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Followers</h2>
+                <button class="modal-close" id="followersModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="followersList" class="user-list">
+                    <!-- Followers will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Following Modal -->
+    <div class="modal" id="followingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Following</h2>
+                <button class="modal-close" id="followingModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="followingList" class="user-list">
+                    <!-- Following will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts Modal -->
+    <div class="modal" id="postsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Posts</h2>
+                <button class="modal-close" id="postsModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="postsList" class="posts-list">
+                    <!-- Posts will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="../JS/profile.js"></script>
 </body>

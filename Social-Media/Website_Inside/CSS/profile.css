@@ -21,14 +21,14 @@
 .profile-cover {
     position: relative;
     height: 250px;
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
     overflow: hidden;
 }
 
 .cover-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c42 100%);
     position: relative;
     background-attachment: fixed;
     background-size: cover;
@@ -108,7 +108,7 @@
     height: 32px;
     border-radius: 50%;
     border: 2px solid white;
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
     color: white;
     cursor: pointer;
     display: flex;
@@ -175,7 +175,7 @@
 }
 
 .stat-card:hover {
-    background: rgba(29, 161, 242, 0.05);
+    background: rgba(255, 127, 7, 0.05);
     transform: translateY(-2px);
 }
 
@@ -223,7 +223,7 @@
 }
 
 .btn-icon:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     border-color: var(--primary-color);
     transform: scale(1.1);
@@ -249,7 +249,7 @@
 }
 
 .profile-tabs::-webkit-scrollbar-thumb {
-    background: rgba(29, 161, 242, 0.3);
+    background: rgba(255, 127, 7, 0.3);
     border-radius: 2px;
 }
 
@@ -270,13 +270,13 @@
 }
 
 .tab-btn:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     transform: translateY(-2px);
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--primary-color), #1a91da);
+    background: linear-gradient(135deg, var(--primary-color), #ff9c33);
     color: white;
     box-shadow: var(--shadow-md);
 }
@@ -451,7 +451,7 @@
 
 .interest-tag {
     padding: 8px 16px;
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     border-radius: 20px;
     font-size: 13px;
@@ -580,7 +580,7 @@
 }
 
 .modal-close:hover {
-    background: rgba(29, 161, 242, 0.1);
+    background: rgba(255, 127, 7, 0.1);
     color: var(--primary-color);
     transform: rotate(90deg);
 }
@@ -619,7 +619,7 @@
 .form-group textarea:focus {
     background: rgba(255, 255, 255, 0.95);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 127, 7, 0.1);
 }
 
 .form-group textarea {

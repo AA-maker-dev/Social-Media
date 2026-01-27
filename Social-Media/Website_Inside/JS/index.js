@@ -16,9 +16,17 @@ function updateNavbarAuth() {
     const isLoggedIn = checkUserSession();
     const authNavItem = document.getElementById('authNavItem');
     const logoutNavItem = document.getElementById('logoutNavItem');
+    const adminNavItem = document.getElementById('adminNavItem');
+    const session = getUserSession();
+    const role = (session?.role || 'customer').toLowerCase();
+    const isAdmin = role === 'admin';
     
     // Only show logout on profile page
     const isProfilePage = window.location.pathname.includes('profile.html');
+
+    if (adminNavItem) {
+        adminNavItem.style.display = isAdmin ? 'block' : 'none';
+    }
     
     if (isLoggedIn && authNavItem && logoutNavItem) {
         authNavItem.style.display = 'none';
@@ -53,6 +61,16 @@ function logout(event) {
         
         // Redirect to login page
         window.location.href = '../../Login/FrontEnd/login.html';
+    }
+}
+
+function ensureCorrectLanding() {
+    const session = getUserSession();
+    if (!session) return;
+    const role = (session.role || 'customer').toLowerCase();
+    const onIndex = window.location.pathname.endsWith('index.html');
+    if (role === 'admin' && onIndex) {
+        window.location.href = 'admin.html';
     }
 }
 
@@ -448,6 +466,7 @@ async function loadPostsFromIndexedDB() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    ensureCorrectLanding();
     // Update navbar authentication UI
     updateNavbarAuth();
     

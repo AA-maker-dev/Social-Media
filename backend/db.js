@@ -1,5 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 
 const DB_PATH = path.join(__dirname, 'nexora.db');
 
@@ -14,11 +16,67 @@ function initDatabase() {
             } else {
                 console.log('Connected to SQLite database at', DB_PATH);
                 createTables()
+                    .then(() => seedDefaultUsers())
                     .then(() => resolve(db))
                     .catch(reject);
             }
         });
     });
+}
+
+async function seedDefaultUsers() {
+    try {
+        // Check if users already exist
+        const existingUser = await getAsync('SELECT COUNT(*) as count FROM users');
+        
+        if (existingUser && existingUser.count > 0) {
+            console.log('Database already seeded with users');
+            return;
+        }
+
+        const bcryptRounds = 10;
+        const users = [
+            {
+                id: uuidv4(),
+                email: 'admin@nexora.com',
+                password: await bcrypt.hash('Admin@123', bcryptRounds),
+                name: 'Admin User',
+                username: '@admin',
+                role: 'admin'
+            },
+            {
+                id: uuidv4(),
+                email: 'test@nexora.com',
+                password: await bcrypt.hash('Test@123', bcryptRounds),
+                name: 'Test User',
+                username: '@testuser',
+                role: 'customer'
+            },
+            {
+                id: uuidv4(),
+                email: 'demo@nexora.com',
+                password: await bcrypt.hash('Demo@123', bcryptRounds),
+                name: 'Demo Account',
+                username: '@demo',
+                role: 'customer'
+            }
+        ];
+
+        for (const user of users) {
+            await runAsync(
+                'INSERT INTO users (id, email, password, name, username, role) VALUES (?, ?, ?, ?, ?, ?)',
+                [user.id, user.email, user.password, user.name, user.username, user.role]
+            );
+        }
+
+        console.log('✅ Default test users created successfully');
+    } catch (err) {
+        if (err.message && err.message.includes('UNIQUE constraint failed')) {
+            console.log('Users already exist, skipping seed');
+        } else {
+            console.error('Error seeding users:', err);
+        }
+    }
 }
 
 function createTables() {

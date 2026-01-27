@@ -55,12 +55,16 @@ function logout(event) {
     }
     
     if (confirm('Are you sure you want to logout?')) {
-        // Clear session
+        // Clear all session and auth data
         localStorage.removeItem('userSession');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('rememberUser');
+        sessionStorage.clear(); // Clear session storage as well
         
         // Redirect to login page
-        window.location.href = '../../Login/FrontEnd/login.html';
+        setTimeout(() => {
+            window.location.href = '../../Login/FrontEnd/login.html';
+        }, 500);
     }
 }
 
@@ -418,7 +422,25 @@ window.addEventListener('focus', () => {
 });
 
 // Post creation with image upload, persistence, edit/delete, and actions
-const STORAGE_KEY = 'nexora_posts_v1';
+// User-specific storage key
+function getUserProfileStorageKeyForPosts(email) {
+    return `nexora_posts_${email || 'default'}`;
+}
+
+function getPostsStorageKey() {
+    const userSession = getUserSession();
+    console.log('🔑 getPostsStorageKey called - userSession:', userSession ? {id: userSession.id, email: userSession.email, name: userSession.name} : 'null');
+    if (userSession && userSession.email) {
+        const key = getUserProfileStorageKeyForPosts(userSession.email);
+        console.log('🔑 Generated storage key:', key);
+        return key;
+    }
+    console.log('🔑 No user session, using fallback key');
+    return 'nexora_posts_v1'; // Fallback for non-logged-in users
+}
+
+let STORAGE_KEY = getPostsStorageKey(); // Get initial key
+console.log('🔑 Initial STORAGE_KEY:', STORAGE_KEY);
 
 // IndexedDB setup for storing images
 const DB_NAME = 'nexora_db';
@@ -466,151 +488,301 @@ async function loadPostsFromIndexedDB() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    ensureCorrectLanding();
-    // Update navbar authentication UI
-    updateNavbarAuth();
-    
-    // Load and update profile data on page load
-    updateHomeProfile();
-    
-    // Render suggested users in sidebar
-    renderSuggestedUsersHome();
-    
-    const imageInput = document.getElementById('post-image');
-    const thumbsContainer = document.getElementById('image-thumbs');
-    const postBtn = document.getElementById('post-btn');
-    const captionInput = document.getElementById('postInput') || document.getElementById('post-caption') || document.querySelector('.post-input');
-    const postsContainer = document.getElementById('posts-container');
-    const clearPostsBtn = document.getElementById('clear-posts');
-
-    let selectedImages = []; // Data URLs
-    let currentImageInput = imageInput; // Keep track of current input element
-    
-    // Debug logging
-    console.log('Initializing post creation...');
-    console.log('imageInput:', imageInput);
-    console.log('currentImageInput:', currentImageInput);
-
-    // Helper function to attach change listener to image input
-    function attachImageInputListener(input) {
-        if (!input) {
-            console.warn('Cannot attach listener - input is null/undefined');
-            return;
-        }
-        console.log('Attaching listener to input:', input);
-        input.addEventListener('change', (e) => {
-            console.log('File selected:', e.target.files);
-            const files = Array.from(e.target.files || []);
-            if (!files.length) return;
-            const readers = files.map(file => fileToDataURL(file));
-            Promise.all(readers).then(dataUrls => {
-                console.log('Images loaded:', dataUrls.length);
-                selectedImages.push(...dataUrls);
-                renderThumbs();
-            });
-        });
-    }
-
-    // Attach initial listener
-    attachImageInputListener(currentImageInput);
-
-    // Close all post menus when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.post-menu-container')) {
-            document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
-                dropdown.style.display = 'none';
-            });
-        }
-    });
-
-    // Load and render stored posts (with images from IndexedDB)
-    let posts = loadPostsFromStorage();
-    
-    // Restore images from IndexedDB
-    loadPostsFromIndexedDB().then(indexedDBPosts => {
-        const indexedDBMap = {};
-        indexedDBPosts.forEach(post => {
-            indexedDBMap[post.id] = post.images;
-        });
+    try {
+        console.log('🌐 DOMContentLoaded - Starting initialization...');
+        // Re-calculate storage key based on current session
+        const oldKey = STORAGE_KEY;
+        STORAGE_KEY = getPostsStorageKey();
+        console.log('🌐 Storage key updated:', oldKey, '→', STORAGE_KEY);
         
-        // Merge images back into posts
-        posts.forEach(post => {
-            if (indexedDBMap[post.id]) {
-                post.images = indexedDBMap[post.id];
+        ensureCorrectLanding();
+        // Update navbar authentication UI
+        updateNavbarAuth();
+        
+        // Load and update profile data on page load
+        updateHomeProfile();
+        
+        // Check if user is logged in - if not, disable post creator
+        const userSession = getUserSession();
+        const postCreator = document.querySelector('.post-creator');
+        if (!userSession && postCreator) {
+            postCreator.style.display = 'none';
+            // Show a login prompt instead
+            const feed = document.getElementById('feed');
+            if (feed) {
+                const loginPrompt = document.createElement('div');
+                loginPrompt.style.cssText = 'text-align: center; padding: 40px 20px; background: var(--card-bg); border-radius: 12px; margin: 20px 0;';
+                loginPrompt.innerHTML = `
+                    <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px; display: block;"></i>
+                    <h3>Please log in to post</h3>
+                    <p style="color: var(--gray-color); margin-bottom: 20px;">Log in to your account to create and share posts with the community.</p>
+                    <a href="../../Login/FrontEnd/login.html" class="btn btn-primary">Go to Login</a>
+                `;
+                feed.insertBefore(loginPrompt, feed.firstChild);
             }
-        });
+        }
         
-        renderAllPosts(posts);
-    }).catch(e => {
-        console.error('Error loading posts from IndexedDB:', e);
-        renderAllPosts(posts);
-    });
+        // Render suggested users in sidebar
+        renderSuggestedUsersHome();
+        
+        const imageInput = document.getElementById('post-image');
+        const thumbsContainer = document.getElementById('image-thumbs');
+        const postBtn = document.getElementById('post-btn');
+        const captionInput = document.getElementById('postInput') || document.getElementById('post-caption') || document.querySelector('.post-input');
+        const postsContainer = document.getElementById('posts-container');
+        const clearPostsBtn = document.getElementById('clear-posts');
 
-    postBtn && postBtn.addEventListener('click', () => {
-        try {
-            console.log('Post button clicked');
-            console.log('selectedImages.length:', selectedImages.length);
-            console.log('caption:', captionInput?.value);
-            const caption = (captionInput && captionInput.value || '').trim();
-            if (!caption && selectedImages.length === 0) {
-                alert('Please add a caption or image to post.');
+        let selectedImages = []; // Data URLs
+        let currentImageInput = imageInput; // Keep track of current input element
+        
+        // Debug logging
+        console.log('=== POST CREATION INITIALIZATION ===');
+        console.log('imageInput:', imageInput);
+        console.log('thumbsContainer:', thumbsContainer);
+        console.log('postBtn:', postBtn);
+        console.log('captionInput:', captionInput);
+        console.log('postsContainer:', postsContainer);
+        console.log('clearPostsBtn:', clearPostsBtn);
+        console.log('currentImageInput:', currentImageInput);
+        console.log('=== END INITIALIZATION ===');
+
+        // Function to render thumbnails
+        function renderThumbs() {
+            console.log('🖼️ renderThumbs called with', selectedImages.length, 'images');
+            
+            if (!thumbsContainer) {
+                console.warn('❌ Thumbs container not found');
                 return;
             }
-
-            const userSession = getUserSession();
-            const post = {
-                id: Date.now().toString(),
-                caption: caption,
-                images: selectedImages.slice(),
-                likes: 0,
-                shares: 0,
-                bookmarked: false,
-                time: new Date().toISOString(),
-                reactions: {
-                    like: 0,
-                    love: 0,
-                    wow: 0,
-                    heartEyes: 0,
-                    party: 0,
-                    fire: 0
-                },
-                userReactions: {},
-                author: userSession ? userSession.name : 'You',
-                authorUsername: userSession ? userSession.username : '@user'
-            };
-
-            console.log('Creating post with', post.images.length, 'images');
-            posts.unshift(post);
-            savePostsToStorage(posts);
-            renderPost(post, postsContainer, posts);
             
-            // Dispatch event to update profile page if it's open
-            console.log('Dispatching postsUpdated event');
-            window.dispatchEvent(new Event('postsUpdated'));
+            console.log('🖼️ Thumbs container found:', thumbsContainer.id);
+            thumbsContainer.innerHTML = '';
             
-            // Also update posts count on home page
-            updateHomeProfile();
-
-            // reset
-            selectedImages = [];
-            renderThumbs();
-            if (captionInput) captionInput.value = '';
-            console.log('Resetting file input');
-            // Reset file input - create a new input element to allow same file selection
-            if (currentImageInput) {
-                console.log('Old input:', currentImageInput);
-                const newInput = currentImageInput.cloneNode(true);
-                currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
-                currentImageInput = newInput;
-                console.log('New input:', currentImageInput);
-                attachImageInputListener(currentImageInput);
-            } else {
-                console.warn('currentImageInput is null/undefined during reset');
+            if (!selectedImages.length) {
+                console.log('🖼️ No images, hiding thumbnails container');
+                thumbsContainer.style.display = 'none';
+                return;
             }
-        } catch (error) {
-            console.error('Error creating post:', error);
-            alert('Error posting: ' + error.message);
+            
+            console.log('🖼️ Showing thumbnails container and rendering', selectedImages.length, 'thumbnails');
+            thumbsContainer.style.display = 'block';
+            
+            const row = document.createElement('div');
+            row.className = 'image-thumbs-row';
+            row.style.cssText = 'display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;';
+            
+            selectedImages.forEach((dataUrl, idx) => {
+                console.log(`🖼️ Creating thumbnail ${idx + 1}/${selectedImages.length}`);
+                const t = document.createElement('div');
+                t.className = 'thumb';
+                t.style.cssText = 'position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary-color);'
+                t.innerHTML = `<img src="${dataUrl}" alt="thumb ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;"><button class="thumb-remove" data-index="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;"><i class="fas fa-times"></i></button>`;\n                row.appendChild(t);\n            });\n            \n            thumbsContainer.appendChild(row);\n            console.log('🖼️ Thumbnails rendered successfully!');\n\n            // Attach remove handlers\n            thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {\n                btn.addEventListener('click', (e) => {\n                    e.preventDefault();\n                    const i = parseInt(btn.getAttribute('data-index'));\n                    if (!isNaN(i)) {\n                        console.log('🖼️ Removing image at index', i);\n                        selectedImages.splice(i, 1);\n                        renderThumbs();\n                    }\n                });\n            });\n        }
+
+        // Helper function to attach change listener to image input
+        function attachImageInputListener(input) {
+            if (!input) {
+                console.warn('Cannot attach listener - input is null/undefined');
+                return;
+            }
+            console.log('Attaching listener to input:', input.id);
+            
+            input.addEventListener('change', function(e) {
+                console.log('📸 Image input change event triggered!');
+                const files = Array.from(e.target.files || []);
+                console.log('📸 Files selected:', files.length);
+                
+                if (!files.length) {
+                    console.warn('No files selected');
+                    return;
+                }
+                
+                console.log('📸 Starting to process', files.length, 'file(s)...');
+                
+                // Process each file
+                let processedCount = 0;
+                files.forEach((file, fileIndex) => {
+                    console.log(`📸 Processing file ${fileIndex + 1}:`, file.name, `(${file.size} bytes)`);
+                    
+                    const reader = new FileReader();
+                    
+                    reader.onerror = function(error) {
+                        console.error('❌ FileReader error for', file.name, error);
+                        alert(`Error reading file ${file.name}: ${error.message}`);
+                    };
+                    
+                    reader.onload = function(event) {
+                        console.log(`📸 FileReader loaded file ${fileIndex + 1}`);
+                        const dataUrl = event.target.result;
+                        
+                        // Test if it's a valid image
+                        const img = new Image();
+                        img.onload = function() {
+                            console.log(`📸 Image ${fileIndex + 1} loaded successfully:`, img.width, 'x', img.height);
+                            selectedImages.push(dataUrl);
+                            console.log('📸 Total images now:', selectedImages.length);
+                            processedCount++;
+                            
+                            // Render thumbnails after all files are processed
+                            if (processedCount === files.length) {
+                                console.log('📸 All files processed! Rendering thumbnails...');
+                                renderThumbs();
+                            }
+                        };
+                        
+                        img.onerror = function() {
+                            console.error('❌ Invalid image file:', file.name);
+                            alert(`File ${file.name} is not a valid image`);
+                        };
+                        
+                        img.src = dataUrl;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            });
         }
+
+        // Attach initial listener
+        if (imageInput) {
+            attachImageInputListener(imageInput);
+        }
+
+        // Close all post menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.post-menu-container')) {
+                document.querySelectorAll('.post-menu-dropdown').forEach(dropdown => {
+                    dropdown.style.display = 'none';
+                });
+            }
+        });
+
+        // Load and render stored posts (with images from IndexedDB)
+        console.log('🔄 Loading posts from storage...');
+        let posts = loadPostsFromStorage();
+        console.log('🔄 Initial posts loaded:', posts.length);
+        
+        // Restore images from IndexedDB
+        loadPostsFromIndexedDB().then(indexedDBPosts => {
+            console.log('🔄 Loaded posts from IndexedDB:', indexedDBPosts.length);
+            
+            const indexedDBMap = {};
+            indexedDBPosts.forEach(post => {
+                indexedDBMap[post.id] = post.images;
+                console.log('🔄 Found images for post', post.id, ':', post.images?.length || 0, 'images');
+            });
+            
+            // Merge images back into posts
+            let updatedCount = 0;
+            posts.forEach(post => {
+                if (indexedDBMap[post.id]) {
+                    post.images = indexedDBMap[post.id];
+                    updatedCount++;
+                }
+            });
+            
+            console.log('🔄 Updated posts with images:', updatedCount, '/', posts.length);
+            
+            if (postsContainer) {
+                console.log('🔄 Rendering all posts...');
+                renderAllPosts(posts);
+            } else {
+                console.warn('❌ Posts container not found!');
+            }
+        }).catch(e => {
+            console.error('❌ Error loading posts from IndexedDB:', e);
+            console.log('🔄 Rendering posts without images from IndexedDB');
+            if (postsContainer) {
+                renderAllPosts(posts);
+            }
+        });
+
+        postBtn && postBtn.addEventListener('click', () => {
+            try {
+                // Check if user is logged in
+                const userSession = getUserSession();
+                if (!userSession) {
+                    alert('Please log in to create a post.');
+                    window.location.href = '../../Login/FrontEnd/login.html';
+                    return;
+                }
+
+                console.log('Post button clicked');
+                const caption = (captionInput && captionInput.value || '').trim();
+                console.log('Caption:', caption);
+                console.log('Selected images count:', selectedImages.length);
+                
+                if (!caption && selectedImages.length === 0) {
+                    alert('Please add a caption or image to post.');
+                    return;
+                }
+
+                // Create post object
+                const post = {
+                    id: Date.now().toString(),
+                    caption: caption,
+                    images: selectedImages.slice(), // Copy the array
+                    likes: 0,
+                    shares: 0,
+                    bookmarked: false,
+                    time: new Date().toISOString(),
+                    reactions: {
+                        like: 0,
+                        love: 0,
+                        wow: 0,
+                        heartEyes: 0,
+                        party: 0,
+                        fire: 0
+                    },
+                    userReactions: {},
+                    author: userSession.name || 'You',
+                    authorUsername: userSession.username || '@user',
+                    userId: userSession.id || 'default'
+                };
+
+                console.log('Creating post:', post);
+                console.log('Current STORAGE_KEY:', STORAGE_KEY);
+                
+                // Add to posts array and save
+                posts.unshift(post);
+                console.log('Posts array length after add:', posts.length);
+                
+                // Save to storage
+                savePostsToStorage(posts);
+                console.log('Post saved to storage');
+
+                // Render the post immediately
+                if (postsContainer) {
+                    renderPost(post, postsContainer, posts);
+                    console.log('Post rendered to DOM');
+                }
+                
+                // Dispatch events
+                window.dispatchEvent(new Event('postsUpdated'));
+                window.dispatchEvent(new Event('postCreated'));
+                
+                // Update profile
+                updateHomeProfile();
+
+                // Reset form
+                selectedImages = [];
+                renderThumbs();
+                if (captionInput) captionInput.value = '';
+                
+                // Reset file input
+                if (currentImageInput) {
+                    const newInput = currentImageInput.cloneNode(true);
+                    currentImageInput.parentNode.replaceChild(newInput, currentImageInput);
+                    currentImageInput = newInput;
+                    attachImageInputListener(currentImageInput);
+                }
+                
+                // Show success message
+                alert('Post created successfully!');
+                console.log('Post creation complete');
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('Error posting: ' + error.message);
+            }
     });
 
     clearPostsBtn && clearPostsBtn.addEventListener('click', () => {
@@ -620,86 +792,82 @@ document.addEventListener('DOMContentLoaded', () => {
         postsContainer.innerHTML = '';
     });
 
-    function renderThumbs() {
-        if (!thumbsContainer) return;
-        thumbsContainer.innerHTML = '';
-        if (!selectedImages.length) {
-            thumbsContainer.style.display = 'none';
-            return;
-        }
-        thumbsContainer.style.display = 'block';
-        const row = document.createElement('div');
-        row.className = 'image-thumbs-row';
-        selectedImages.forEach((dataUrl, idx) => {
-            const t = document.createElement('div');
-            t.className = 'thumb';
-            t.innerHTML = `<img src="${dataUrl}" alt="thumb"><button class="thumb-remove" data-index="${idx}"><i class="fas fa-times"></i></button>`;
-            row.appendChild(t);
-        });
-        thumbsContainer.appendChild(row);
-
-        // attach remove handlers
-        thumbsContainer.querySelectorAll('.thumb-remove').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const i = parseInt(btn.getAttribute('data-index'));
-                if (!isNaN(i)) {
-                    selectedImages.splice(i, 1);
-                    renderThumbs();
-                }
-            });
-        });
-    }
-
     function fileToDataURL(file) {
-        return new Promise((res, rej) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    // Create canvas and resize image aggressively
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    // More aggressive sizing
-                    const maxWidth = 600;
-                    const maxHeight = 600;
-                    
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width = Math.round((width * maxHeight) / height);
-                            height = maxHeight;
-                        }
+        return new Promise((resolve, reject) => {
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const img = new Image();
+                        img.onload = () => {
+                            try {
+                                // Create canvas and resize image
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+                                
+                                const maxWidth = 800;
+                                const maxHeight = 800;
+                                
+                                if (width > height) {
+                                    if (width > maxWidth) {
+                                        height = Math.round((height * maxWidth) / width);
+                                        width = maxWidth;
+                                    }
+                                } else {
+                                    if (height > maxHeight) {
+                                        width = Math.round((width * maxHeight) / height);
+                                        height = maxHeight;
+                                    }
+                                }
+                                
+                                canvas.width = width;
+                                canvas.height = height;
+                                
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                // Convert to data URL with compression (0.7 quality)
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                console.log('Image converted to data URL, size:', dataUrl.length);
+                                resolve(dataUrl);
+                            } catch (error) {
+                                console.error('Error processing image:', error);
+                                reject(error);
+                            }
+                        };
+                        img.onerror = (error) => {
+                            console.error('Error loading image:', error);
+                            reject(error);
+                        };
+                        img.src = e.target.result;
+                    } catch (error) {
+                        console.error('Error in reader onload:', error);
+                        reject(error);
                     }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Convert to data URL with aggressive compression (0.5 quality)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-                    res(dataUrl);
                 };
-                img.onerror = rej;
-                img.src = e.target.result;
-            };
-            reader.onerror = rej;
-            reader.readAsDataURL(file);
+                reader.onerror = (error) => {
+                    console.error('FileReader error:', error);
+                    reject(error);
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Error in fileToDataURL:', error);
+                reject(error);
+            }
         });
     }
 
     // Storage helpers (inside DOMContentLoaded scope)
     function loadPostsFromStorage() {
         try {
+            console.log('📦 Loading posts from storage. STORAGE_KEY:', STORAGE_KEY);
             const raw = localStorage.getItem(STORAGE_KEY);
+            console.log('📦 Raw data from localStorage:', raw ? 'Found' : 'Not found');
+            
             const posts = raw ? JSON.parse(raw) : [];
+            console.log('📦 Loaded posts:', posts.length);
+            
             // Migrate old posts to have reactions object
             posts.forEach(post => {
                 if (!post.reactions) {
@@ -717,38 +885,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     post.userReactions = {};
                 }
                 if (!post.author) {
-                    post.author = 'You';
+                    const userSession = getUserSession();
+                    post.author = userSession ? userSession.name : 'You';
                     post.authorUsername = userSession ? userSession.username : '@user';
                 }
+                // Ensure post has required fields
+                if (!post.id) post.id = Date.now().toString();
+                if (!post.time) post.time = new Date().toISOString();
             });
+            
+            console.log('📦 Posts migrated and verified:', posts.length);
             return posts;
         } catch (e) {
+            console.error('📦 Error loading posts from storage:', e);
             return [];
         }
     }
 
     function savePostsToStorage(postsArr) {
         try {
-            // Store post metadata in localStorage (without images)
+            console.log('💾 Saving posts to storage. STORAGE_KEY:', STORAGE_KEY);
+            console.log('💾 Posts to save:', postsArr.length);
+            
+            // Store post metadata in localStorage (without images to save space)
             const postsForStorage = postsArr.map(post => ({
                 ...post,
                 images: [] // Don't store images in localStorage
             }));
             
             const jsonString = JSON.stringify(postsForStorage);
+            console.log('💾 JSON string size:', jsonString.length, 'bytes');
+            
             localStorage.setItem(STORAGE_KEY, jsonString);
+            console.log('✅ Posts saved to localStorage successfully');
             
             // Store full posts with images in IndexedDB
-            postsArr.forEach(post => {
+            postsArr.forEach((post, idx) => {
                 if (post.images && post.images.length > 0) {
-                    savePostToIndexedDB(post);
+                    console.log(`💾 Saving post ${idx + 1} images to IndexedDB (${post.images.length} images)`);
+                    savePostToIndexedDB(post).catch(e => {
+                        console.warn(`❌ Failed to save post ${idx + 1} to IndexedDB:`, e);
+                    });
                 }
             });
             
             // Dispatch event to update profile page if it's open
             window.dispatchEvent(new Event('postsUpdated'));
         } catch (e) {
-            console.error('Error saving posts to storage:', e);
+            console.error('❌ Error saving posts to storage:', e);
             if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
                 alert('Storage quota exceeded. Please clear your browser storage or use fewer/smaller images.');
             } else {
@@ -760,6 +944,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Rendering
     function renderAllPosts(postsArr) {
+        console.log('🎨 renderAllPosts called with', postsArr.length, 'posts');
+        console.log('🎨 Posts to render:', postsArr.map(p => ({id: p.id, author: p.author, hasImages: (p.images && p.images.length > 0)})));
+        
         postsContainer.innerHTML = '';
         // Sort posts by time (newest first)
         const sortedPosts = [...postsArr].sort((a, b) => {
@@ -767,7 +954,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeB = new Date(b.time || 0).getTime();
             return timeB - timeA; // Descending order (newest first)
         });
-        sortedPosts.forEach(post => renderPost(post, postsContainer, postsArr));
+        console.log('🎨 After sorting, rendering', sortedPosts.length, 'posts to DOM');
+        sortedPosts.forEach((post, idx) => {
+            console.log(`🎨 Rendering post ${idx + 1}:`, post.id, 'by', post.author);
+            renderPost(post, postsContainer, postsArr);
+        });
     }
 
     function renderPost(post, container, postsArr) {

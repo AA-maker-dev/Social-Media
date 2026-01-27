@@ -623,6 +623,17 @@ body {
     flex-wrap: wrap;
 }
 
+#image-thumbs {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0,0,0,0.02);
+    border-radius: 8px;
+}
+
+#image-thumbs[style*="display: block"] {
+    display: block !important;
+}
+
 .thumb {
     position: relative;
     width: 90px;
@@ -630,6 +641,7 @@ body {
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--border-color);
+    background: white;
 }
 
 .thumb img {

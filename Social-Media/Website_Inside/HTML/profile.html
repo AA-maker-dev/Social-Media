@@ -7,6 +7,33 @@
     <link rel="stylesheet" href="../CSS/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Nexora - Profile</title>
+    <script>
+        // Check session and update navbar immediately
+        function checkUserSession() {
+            return !!localStorage.getItem('userSession');
+        }
+        
+        function updateNavbarAuth() {
+            const isLoggedIn = checkUserSession();
+            const authNavItem = document.getElementById('authNavItem');
+            const logoutNavItem = document.getElementById('logoutNavItem');
+            
+            if (isLoggedIn && authNavItem && logoutNavItem) {
+                authNavItem.style.display = 'none';
+                logoutNavItem.style.display = 'block';
+            } else if (!isLoggedIn && authNavItem && logoutNavItem) {
+                authNavItem.style.display = 'block';
+                logoutNavItem.style.display = 'none';
+            }
+        }
+        
+        // Update immediately on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateNavbarAuth);
+        } else {
+            updateNavbarAuth();
+        }
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -22,7 +49,7 @@
                 <li><a href="notifications.html" class="nav-link">Notifications</a></li>
                 <li><a href="profile.html" class="nav-link active">Profile</a></li>
                 <li id="authNavItem"><a href="../../Login/FrontEnd/login.html" class="nav-link" style="color: #1DA1F2;"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li id="logoutNavItem" style="display: none;"><a href="#" onclick="logout(event)" class="nav-link" style="color: #E0245E;">Logout</a></li>
+                <li id="logoutNavItem"><a href="#" onclick="logout(event)" class="nav-link" style="color: #E0245E;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -342,6 +369,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Logout function
+        function logout(event) {
+            if (event) event.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all session and auth data
+                localStorage.removeItem('userSession');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('rememberUser');
+                sessionStorage.clear();
+                
+                // Redirect to login page
+                setTimeout(() => {
+                    window.location.href = '../../Login/FrontEnd/login.html';
+                }, 500);
+            }
+        }
+    </script>
 
     <script src="../JS/profile.js"></script>
 </body>

@@ -1,8 +1,8 @@
 // Mock user database (in a real app, this would be on the server)
 const DEFAULT_USERS = [
-    { email: 'admin@nexora.com', password: 'Admin@123', name: 'Admin', username: '@admin' },
-    { email: 'user@nexora.com', password: 'User@123', name: 'Test User', username: '@testuser' },
-    { email: 'demo@nexora.com', password: 'Demo@123', name: 'Demo Account', username: '@demo' }
+    { email: 'admin@nexora.com', password: 'Admin@123', name: 'Admin', username: '@admin', role: 'admin' },
+    { email: 'user@nexora.com', password: 'User@123', name: 'Test User', username: '@testuser', role: 'customer' },
+    { email: 'demo@nexora.com', password: 'Demo@123', name: 'Demo Account', username: '@demo', role: 'customer' }
 ];
 
 // Load users from localStorage or use default
@@ -10,7 +10,8 @@ function loadUsers() {
     try {
         const stored = localStorage.getItem('nexora_users_db');
         if (stored) {
-            return JSON.parse(stored);
+            const parsed = JSON.parse(stored);
+            return parsed.map(u => ({ role: 'customer', ...u }));
         }
     } catch (e) {
         console.error('Error loading users:', e);
@@ -28,6 +29,13 @@ function saveUsers(usersArray) {
 }
 
 let users = loadUsers();
+
+function getLandingPageForRole(role) {
+    const basePath = '../../Website_Inside/HTML/';
+    const normalized = (role || 'customer').toLowerCase();
+    if (normalized === 'admin') return `${basePath}admin.html`;
+    return `${basePath}index.html`;
+}
 
 // Email validation function
 function isValidEmail(email) {
@@ -102,10 +110,12 @@ function validateAndLogin(event) {
     
     if (user) {
         // Store user session
+        const userRole = user.role || 'customer';
         const userSession = {
             email: user.email,
             name: user.name,
             username: user.username,
+            role: userRole,
             loginTime: new Date().toISOString()
         };
         
@@ -121,7 +131,7 @@ function validateAndLogin(event) {
         
         // Redirect to dashboard after 1 second
         setTimeout(() => {
-            window.location.href = '../../Website_Inside/HTML/index.html';
+            window.location.href = getLandingPageForRole(userRole);
         }, 1000);
     } else {
         showError('emailError', 'Invalid email or password');
@@ -216,7 +226,8 @@ function validateAndSignup(event) {
         email: email,
         password: password,
         name: name,
-        username: '@' + username.replace('@', '')
+        username: '@' + username.replace('@', ''),
+        role: 'customer'
     };
     
     users.push(newUser);
@@ -460,8 +471,12 @@ function handleForgotPassword(event) {
 function checkExistingSession() {
     const userSession = localStorage.getItem('userSession');
     if (userSession) {
-        // User is already logged in, redirect to dashboard
-        window.location.href = '../../Website_Inside/HTML/index.html';
+        try {
+            const parsed = JSON.parse(userSession);
+            window.location.href = getLandingPageForRole(parsed?.role);
+        } catch (e) {
+            window.location.href = '../../Website_Inside/HTML/index.html';
+        }
     }
 }
 
@@ -483,7 +498,7 @@ function loadRememberedEmail() {
 function showDemoCredentials() {
     console.log('Demo Credentials:');
     users.forEach(user => {
-        console.log(`Email: ${user.email} | Password: ${user.password}`);
+        console.log(`Email: ${user.email} | Password: ${user.password} | Role: ${user.role || 'customer'}`);
     });
 }
 

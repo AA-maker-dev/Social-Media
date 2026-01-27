@@ -562,7 +562,7 @@ function renderPosts() {
         } else {
             // If no image, show a placeholder or caption preview
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -645,7 +645,7 @@ function renderSavedPosts() {
             imageHtml = `<img src="${postImage}" alt="Saved Post" class="post-card-image">`;
         } else {
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -997,7 +997,7 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #ff9c33)'};
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #1a91da)'};
         color: white;
         padding: 16px 24px;
         border-radius: 12px;
@@ -1039,4 +1039,52 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// Settings Modal
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+const emailToggle = document.getElementById("emailNotificationsToggle");
+const logoutBtn = document.getElementById("logoutBtn");
+const changePasswordBtn = document.getElementById("changePasswordBtn");
+
+// Open / Close
+settingsBtn.addEventListener("click", () => {
+    settingsModal.classList.add("active");
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+    settingsModal.classList.remove("active");
+});
+
+// Load Settings
+darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
+emailToggle.checked = localStorage.getItem("emailNotifications") === "true";
+
+if (darkModeToggle.checked) {
+    document.body.classList.add("dark-mode");
+}
+
+// Dark Mode
+darkModeToggle.addEventListener("change", () => {
+    localStorage.setItem("darkMode", darkModeToggle.checked);
+    document.body.classList.toggle("dark-mode", darkModeToggle.checked);
+});
+
+// Email Notifications
+emailToggle.addEventListener("change", () => {
+    localStorage.setItem("emailNotifications", emailToggle.checked);
+});
+
+// Change Password
+changePasswordBtn.addEventListener("click", () => {
+    alert("Redirect to Change Password Page");
+});
+
+// Logout
+logoutBtn.addEventListener("click", () => {
+    localStorage.clear();
+    /z:/Social-Media/Social-Media/Login/login.html
+});
 

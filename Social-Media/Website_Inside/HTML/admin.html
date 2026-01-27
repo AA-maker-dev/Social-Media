@@ -44,19 +44,19 @@
             </div>
             <div class="admin-grid">
                 <div class="admin-card">
-                    <div class="admin-meta-text">Active users (24h)</div>
-                    <h2 id="metricUsers">12.4K</h2>
-                    <div class="admin-meta-text">+4.6% vs last week</div>
+                    <div class="admin-meta-text">Active users (all)</div>
+                    <h2 id="metricUsers">0</h2>
+                    <div class="admin-meta-text" id="metricUsersSub">Counting registered accounts</div>
                 </div>
                 <div class="admin-card">
-                    <div class="admin-meta-text">Open reports</div>
-                    <h2 id="metricReports">18</h2>
-                    <div class="admin-meta-text">7 need review today</div>
+                    <div class="admin-meta-text">Posts in last 24h</div>
+                    <h2 id="metricPosts24h">0</h2>
+                    <div class="admin-meta-text" id="metricPostsSub">Live from feed storage</div>
                 </div>
                 <div class="admin-card">
-                    <div class="admin-meta-text">System health</div>
-                    <h2 id="metricHealth">99.9%</h2>
-                    <div class="admin-meta-text">API latency stable</div>
+                    <div class="admin-meta-text">Engagement (likes/reactions)</div>
+                    <h2 id="metricEngagement">0</h2>
+                    <div class="admin-meta-text" id="metricEngagementSub">Updated in real time</div>
                 </div>
             </div>
         </section>
@@ -82,6 +82,13 @@
                     <span class="admin-chip">Shortcuts</span>
                 </div>
                 <div class="admin-actions" id="adminActions"></div>
+            </div>
+            <div class="admin-card">
+                <div class="admin-meta" style="justify-content: space-between;">
+                    <h3>Live feed snapshot</h3>
+                    <span class="admin-chip">Top posts</span>
+                </div>
+                <ul class="admin-list" id="adminLive"></ul>
             </div>
         </section>
     </main>

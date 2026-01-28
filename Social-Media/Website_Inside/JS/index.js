@@ -429,13 +429,19 @@ function updateHomeProfile() {
         }
     }
     
-    // Update avatars with profile picture
-    const profilePicture = profile?.profilePicture || DEFAULT_AVATAR_URL;
+    // Update avatars with profile picture from userSession or profile
+    const avatarUrl = userSession?.avatar || profile?.profilePicture || 'https://i.pravatar.cc/150?img=0';
     
     // Update sidebar avatar
-    const sidebarAvatar = document.querySelector('.sidebar-card .user-profile .avatar');
+    const sidebarAvatar = document.getElementById('userProfileAvatar');
     if (sidebarAvatar) {
-        sidebarAvatar.src = profilePicture;
+        sidebarAvatar.src = avatarUrl;
+    }
+    
+    // Update post creator avatar
+    const postCreatorAvatar = document.getElementById('postCreatorAvatar');
+    if (postCreatorAvatar) {
+        postCreatorAvatar.src = avatarUrl;
     }
     
     // Add click handlers to profile stats

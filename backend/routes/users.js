@@ -7,7 +7,7 @@ const router = express.Router();
 // Get all users
 router.get('/', async (req, res) => {
     try {
-        const users = await allAsync('SELECT id, name, username, email, role, created_at FROM users');
+        const users = await allAsync('SELECT id, name, username, email, role, avatar, bio, location, website, created_at FROM users');
         res.json(users);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 // Get user by ID
 router.get('/:id', async (req, res) => {
     try {
-        const user = await getAsync('SELECT id, name, username, email, role, created_at FROM users WHERE id = ?', [req.params.id]);
+        const user = await getAsync('SELECT id, name, username, email, role, avatar, bio, location, website, created_at FROM users WHERE id = ?', [req.params.id]);
         if (!user) return res.status(404).json({ error: 'User not found' });
         res.json(user);
     } catch (err) {

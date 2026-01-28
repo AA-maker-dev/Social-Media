@@ -313,8 +313,8 @@ async function renderSuggestedUsersHome() {
             container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);"><p>You\'re following everyone!</p></div>';
         } else {
             container.innerHTML = suggestedUsers.map(user => {
-                // Use default avatar if no profile picture available
-                const avatar = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+                // Use user's avatar from profile data, fallback to default
+                const avatar = user.avatar || 'https://i.pravatar.cc/150?img=0';
                 return `
                     <div class="suggestion">
                         <img src="${avatar}" alt="${user.name}" class="avatar-sm">

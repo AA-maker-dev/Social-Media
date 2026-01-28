@@ -35,6 +35,17 @@ async function seedDefaultUsers() {
         }
 
         const bcryptRounds = 10;
+        const avatarUrls = [
+            'https://i.pravatar.cc/150?img=1',
+            'https://i.pravatar.cc/150?img=2',
+            'https://i.pravatar.cc/150?img=3',
+            'https://i.pravatar.cc/150?img=4',
+            'https://i.pravatar.cc/150?img=5',
+            'https://i.pravatar.cc/150?img=6',
+            'https://i.pravatar.cc/150?img=7',
+            'https://i.pravatar.cc/150?img=8'
+        ];
+
         const users = [
             {
                 id: uuidv4(),
@@ -42,7 +53,11 @@ async function seedDefaultUsers() {
                 password: await bcrypt.hash('Admin@123', bcryptRounds),
                 name: 'Admin User',
                 username: '@admin',
-                role: 'admin'
+                role: 'admin',
+                avatar: avatarUrls[0],
+                bio: 'System Administrator',
+                location: 'San Francisco, CA',
+                website: 'https://example.com'
             },
             {
                 id: uuidv4(),
@@ -50,7 +65,11 @@ async function seedDefaultUsers() {
                 password: await bcrypt.hash('Test@123', bcryptRounds),
                 name: 'Test User',
                 username: '@testuser',
-                role: 'customer'
+                role: 'customer',
+                avatar: avatarUrls[1],
+                bio: 'Testing the platform',
+                location: 'New York, NY',
+                website: ''
             },
             {
                 id: uuidv4(),
@@ -58,14 +77,18 @@ async function seedDefaultUsers() {
                 password: await bcrypt.hash('Demo@123', bcryptRounds),
                 name: 'Demo Account',
                 username: '@demo',
-                role: 'customer'
+                role: 'customer',
+                avatar: avatarUrls[2],
+                bio: 'Demo user for testing',
+                location: 'Boston, MA',
+                website: ''
             }
         ];
 
         for (const user of users) {
             await runAsync(
-                'INSERT INTO users (id, email, password, name, username, role) VALUES (?, ?, ?, ?, ?, ?)',
-                [user.id, user.email, user.password, user.name, user.username, user.role]
+                'INSERT INTO users (id, email, password, name, username, role, avatar, bio, location, website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [user.id, user.email, user.password, user.name, user.username, user.role, user.avatar, user.bio, user.location, user.website]
             );
         }
 
@@ -91,6 +114,11 @@ function createTables() {
                     name TEXT NOT NULL,
                     username TEXT UNIQUE NOT NULL,
                     role TEXT DEFAULT 'customer',
+                    avatar TEXT,
+                    bio TEXT,
+                    location TEXT,
+                    website TEXT,
+                    cover_photo TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )

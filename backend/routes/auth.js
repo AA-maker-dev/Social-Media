@@ -35,7 +35,7 @@ router.post('/login', loginValidation, handleValidationErrors, asyncHandler(asyn
     const { email, password } = req.body;
 
     const user = await getAsync(
-        'SELECT id, name, username, email, password, role FROM users WHERE email = ?',
+        'SELECT id, name, username, email, password, role, avatar, bio, location, website FROM users WHERE email = ?',
         [email]
     );
 

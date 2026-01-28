@@ -459,16 +459,17 @@ function loadProfile() {
             return {
                 name: userSession.name || 'User',
                 username: userSession.username || '@user',
-                bio: 'Welcome to my profile! 👋',
-                work: 'Not specified',
-                education: 'Not specified',
-                location: 'Not specified',
-                website: 'www.example.com',
+                bio: userSession.bio || 'Welcome to my profile! 👋',
+                work: userSession.work || 'Not specified',
+                education: userSession.education || 'Not specified',
+                location: userSession.location || 'Not specified',
+                website: userSession.website || 'www.example.com',
                 joined: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
                 followers: followers.length.toString(),
                 following: following.length.toString(),
                 posts: '0',
-                profilePicture: null,
+                profilePicture: userSession.avatar || null,
+                avatar: userSession.avatar || null,
                 coverImage: null
             };
         }
@@ -556,7 +557,9 @@ function renderProfile() {
     // Update profile avatar
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
-        profileAvatar.src = profile.profilePicture || DEFAULT_AVATAR_URL;
+        const userSession = getUserSession();
+        const avatarUrl = userSession?.avatar || profile.profilePicture || DEFAULT_AVATAR_URL;
+        profileAvatar.src = avatarUrl;
     }
     
     // Update cover image

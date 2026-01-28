@@ -1,10 +1,30 @@
 # Nexora Social Media Platform
 
-A full-stack social media application built with Express.js backend and vanilla JavaScript frontend.
+A full-stack social media application built with Express.js backend and vanilla JavaScript frontend. Production-ready deployment package.
 
-## 🚀 Project Overview
+## 🚀 Quick Start
 
-Nexora is a feature-rich social media platform that allows users to:
+### Prerequisites
+- Node.js v14+ and npm
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+
+### Installation & Deployment
+
+**Backend Setup:**
+```bash
+cd backend
+npm install
+npm start
+```
+The API will run on `http://localhost:5000`
+
+**Frontend Access:**
+```
+Open: Social-Media/Login/FrontEnd/login.html
+```
+
+## ✨ Features
+
 - Create and manage posts with image uploads
 - React to posts with emoji reactions (6 types)
 - Comment on posts
@@ -17,56 +37,29 @@ Nexora is a feature-rich social media platform that allows users to:
 ## 📁 Project Structure
 
 ```
-.
-├── backend/                          # Node.js/Express backend API
-│   ├── db.js                         # SQLite3 database initialization
-│   ├── server.js                     # Express server configuration
-│   ├── package.json                  # Backend dependencies
-│   ├── routes/                       # API routes
-│   │   ├── auth.js                   # Authentication (login/signup)
-│   │   ├── users.js                  # User management
-│   │   ├── posts.js                  # Post CRUD operations
-│   │   └── comments.js               # Comment management
-│   └── middleware/
-│       ├── auth.js                   # JWT authentication middleware
-│       └── errorHandler.js           # Error handling middleware
-│
-├── Social-Media/
-│   ├── Login/                        # Login page
-│   │   └── FrontEnd/
-│   │       ├── login.html
-│   │       ├── app.js
-│   │       └── style.css
-│   └── Website_Inside/               # Main application
-│       ├── HTML/                     # HTML pages
-│       │   ├── index.html            # Main feed
-│       │   ├── profile.html          # User profile
-│       │   ├── messages.html         # Messaging
-│       │   ├── notifications.html    # Notifications
-│       │   ├── explore.html          # Explore content
-│       │   └── admin.html            # Admin dashboard
-│       ├── CSS/                      # Stylesheets
-│       │   ├── styles.css            # Global styles
-│       │   ├── post-styles.css       # Post and reaction styles
-│       │   ├── profile.css           # Profile page styles
-│       │   ├── messages.css          # Messages styles
-│       │   ├── notifications.css     # Notifications styles
-│       │   ├── explore.css           # Explore page styles
-│       │   └── home.css              # Home page styles
-│       └── JS/                       # JavaScript modules
-│           ├── index.js              # Main feed logic (1500+ lines)
-│           ├── profile.js            # Profile management (1100+ lines)
-│           ├── api.js                # Centralized API service
-│           ├── messages.js           # Messaging functionality
-│           ├── notifications.js      # Notifications handler
-│           ├── explore.js            # Explore page logic
-│           └── admin.js              # Admin dashboard
-│
-├── docs/                             # Documentation files
-├── tests/                            # Test files and demos
-├── scripts/                          # Helper scripts
-├── archive/                          # Old/backup files
-└── README.md                         # This file
+backend/                          # Node.js/Express backend API
+├── db.js                         # SQLite3 database
+├── server.js                     # Express server
+├── package.json                  # Dependencies
+├── routes/                       # API routes
+│   ├── auth.js                   # Authentication
+│   ├── users.js                  # User management
+│   ├── posts.js                  # Post CRUD
+│   └── comments.js               # Comments
+└── middleware/
+    ├── auth.js                   # JWT authentication
+    └── errorHandler.js           # Error handling
+
+Social-Media/Website_Inside/      # Frontend application
+├── HTML/                         # Web pages
+│   ├── index.html                # Main feed
+│   ├── profile.html              # User profile
+│   ├── messages.html             # Messaging
+│   ├── notifications.html        # Notifications
+│   ├── explore.html              # Explore content
+│   └── admin.html                # Admin dashboard
+├── CSS/                          # Stylesheets
+└── JS/                           # JavaScript modules
 ```
 
 ## ⚙️ Setup & Installation

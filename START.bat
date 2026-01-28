@@ -1,40 +1,57 @@
 @echo off
-REM Nexora Social Media Platform - Auto Start Script
-REM This script starts the backend server and opens the frontend automatically
+REM Nexora Social Media Platform - Full Auto Start Script
+REM This script automatically starts backend and frontend
+
+setlocal enabledelayedexpansion
 
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║         Nexora Social Media Platform - Starting...           ║
+echo ║         Nexora Social Media Platform - Auto Starting...      ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
+REM Get the directory where the script is located
+set "SCRIPT_DIR=%~dp0"
+echo Starting from: %SCRIPT_DIR%
+echo.
+
 REM Navigate to backend folder
-cd /d "%~dp0backend"
+cd /d "%SCRIPT_DIR%backend"
 
 REM Check if node_modules exists, if not install dependencies
 if not exist "node_modules" (
-    echo Installing dependencies...
+    echo [*] Installing dependencies...
     call npm install
+    if errorlevel 1 (
+        echo [ERROR] Failed to install dependencies
+        pause
+        exit /b 1
+    )
 )
 
-REM Start backend server in a new window
-echo Starting Backend Server...
-start cmd /k npm start
+echo [✓] Starting Backend Server...
+REM Start backend server in a new window with a title
+start "Nexora Backend Server" cmd /k "npm start"
 
-REM Wait a few seconds for backend to start
-timeout /t 3 /nobreak
+REM Wait for backend to initialize
+echo [*] Waiting for backend to start (5 seconds)...
+timeout /t 5 /nobreak
 
 REM Open frontend in default browser
-echo Opening Frontend in Browser...
-start "" "%~dp0Social-Media\Login\FrontEnd\login.html"
+echo [✓] Opening Frontend in Browser...
+start "" "%SCRIPT_DIR%Social-Media\Login\FrontEnd\login.html"
+
+REM Wait a moment for browser to open
+timeout /t 2 /nobreak
 
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
 echo ║  ✅ Backend Server Started (localhost:5000)                  ║
 echo ║  ✅ Frontend Opened in Browser                               ║
 echo ║                                                              ║
-echo ║  Backend window will stay open. Close it to stop the server.║
+echo ║  Backend window is running separately.                      ║
+echo ║  Keep it open to use the application.                       ║
+echo ║                                                              ║
+echo ║  To stop: Close the Backend Server window                   ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
-
-pause

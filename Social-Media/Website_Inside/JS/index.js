@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Creating post with', post.images.length, 'images');
             posts.unshift(post);
             savePostsToStorage(posts);
-            renderPost(post, postsContainer, posts);
+            renderAllPosts(posts);
             
             // Dispatch event to update profile page if it's open
             console.log('Dispatching postsUpdated event');
@@ -656,14 +656,14 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    // Create canvas and resize image aggressively
+                    // Create canvas with higher quality settings
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
                     
-                    // More aggressive sizing
-                    const maxWidth = 600;
-                    const maxHeight = 600;
+                    // Increased size limits for better quality
+                    const maxWidth = 2048;
+                    const maxHeight = 2048;
                     
                     if (width > height) {
                         if (width > maxWidth) {
@@ -683,8 +683,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Convert to data URL with aggressive compression (0.5 quality)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    // Convert to data URL with high quality (0.9 quality)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
                     res(dataUrl);
                 };
                 img.onerror = rej;
@@ -809,12 +809,64 @@ document.addEventListener('DOMContentLoaded', () => {
         if (post.caption) content.innerHTML = `<p class="post-caption">${escapeHtml(post.caption)}</p>`;
 
         if (post.images && post.images.length) {
-            post.images.forEach(src => {
+            if (post.images.length === 1) {
+                // Single image - full width
                 const img = document.createElement('img');
                 img.className = 'post-image';
-                img.src = src;
+                img.src = post.images[0];
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', () => openLightbox(post.images, 0));
                 content.appendChild(img);
-            });
+            } else {
+                // Multiple images - grid layout
+                const gallery = document.createElement('div');
+                gallery.className = 'post-gallery';
+                
+                // Add class based on number of images
+                if (post.images.length === 2) {
+                    gallery.classList.add('gallery-2');
+                } else if (post.images.length === 3) {
+                    gallery.classList.add('gallery-3');
+                } else if (post.images.length === 4) {
+                    gallery.classList.add('gallery-4');
+                } else {
+                    gallery.classList.add('gallery-5-plus');
+                }
+                
+                post.images.forEach((src, idx) => {
+                    // Show only first 4 images, rest get indicated with "+X more"
+                    if (idx >= 4) return;
+                    
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.className = 'gallery-item';
+                    imgWrapper.style.cursor = 'pointer';
+                    imgWrapper.addEventListener('click', () => openLightbox(post.images, idx));
+                    
+                    // For 3 images, make first one larger
+                    if (post.images.length === 3 && idx === 0) {
+                        imgWrapper.style.gridColumn = 'span 1';
+                        imgWrapper.style.gridRow = 'span 2';
+                    }
+                    
+                    const img = document.createElement('img');
+                    img.className = 'gallery-image';
+                    img.src = src;
+                    imgWrapper.appendChild(img);
+                    gallery.appendChild(imgWrapper);
+                });
+                
+                // Show "+X more" indicator if more than 4 images
+                if (post.images.length > 4) {
+                    const moreIndicator = document.createElement('div');
+                    moreIndicator.className = 'gallery-item more-indicator';
+                    moreIndicator.textContent = `+${post.images.length - 4}`;
+                    moreIndicator.style.cursor = 'pointer';
+                    moreIndicator.addEventListener('click', () => openLightbox(post.images, 4));
+                    gallery.appendChild(moreIndicator);
+                }
+                
+                content.appendChild(gallery);
+            }
         }
 
         const stats = document.createElement('div');
@@ -894,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
         postEl.appendChild(stats);
         postEl.appendChild(actions);
 
-        container.insertAdjacentElement('afterbegin', postEl);
+        container.appendChild(postEl);
 
         // handlers
         const likeBtn = postEl.querySelector('.action-like');
@@ -1260,5 +1312,82 @@ document.addEventListener('DOMContentLoaded', () => {
         div.innerHTML = `<p><strong>${sender}:</strong> ${text}</p>`;
         chatWindow.appendChild(div);
         chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Lightbox functionality for images
+    function openLightbox(images, startIdx) {
+        console.log('openLightbox called with', images.length, 'images, starting at', startIdx);
+        
+        // Create lightbox overlay
+        const lightbox = document.createElement('div');
+        lightbox.className = 'lightbox';
+        
+        let currentIdx = startIdx;
+        
+        lightbox.innerHTML = `
+            <div class="lightbox-content">
+                <button class="lightbox-close"><i class="fas fa-times"></i></button>
+                <button class="lightbox-prev" style="display: ${images.length > 1 ? 'flex' : 'none'};"><i class="fas fa-chevron-left"></i></button>
+                <img class="lightbox-image" src="${images[currentIdx]}" alt="Lightbox image">
+                <button class="lightbox-next" style="display: ${images.length > 1 ? 'flex' : 'none'};"><i class="fas fa-chevron-right"></i></button>
+                <div class="lightbox-counter">${currentIdx + 1} / ${images.length}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(lightbox);
+        console.log('Lightbox appended to body');
+        
+        // Close lightbox
+        const closeBtn = lightbox.querySelector('.lightbox-close');
+        closeBtn.addEventListener('click', () => {
+            lightbox.remove();
+        });
+        
+        // Click outside to close
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.remove();
+            }
+        });
+        
+        // Previous image
+        const prevBtn = lightbox.querySelector('.lightbox-prev');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                currentIdx = (currentIdx - 1 + images.length) % images.length;
+                updateLightbox();
+            });
+        }
+        
+        // Next image
+        const nextBtn = lightbox.querySelector('.lightbox-next');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                currentIdx = (currentIdx + 1) % images.length;
+                updateLightbox();
+            });
+        }
+        
+        // Keyboard navigation
+        const handleKeyPress = (e) => {
+            if (e.key === 'ArrowLeft') {
+                currentIdx = (currentIdx - 1 + images.length) % images.length;
+                updateLightbox();
+            } else if (e.key === 'ArrowRight') {
+                currentIdx = (currentIdx + 1) % images.length;
+                updateLightbox();
+            } else if (e.key === 'Escape') {
+                lightbox.remove();
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+        };
+        document.addEventListener('keydown', handleKeyPress);
+        
+        function updateLightbox() {
+            const img = lightbox.querySelector('.lightbox-image');
+            const counter = lightbox.querySelector('.lightbox-counter');
+            img.src = images[currentIdx];
+            counter.textContent = `${currentIdx + 1} / ${images.length}`;
+        }
     }
 });

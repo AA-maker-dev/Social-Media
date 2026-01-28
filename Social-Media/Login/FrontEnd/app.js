@@ -112,19 +112,29 @@ async function validateAndLogin(event) {
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         
-        // Call backend API
+        // Call backend API with timeout
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
         const response = await fetch('http://localhost:5000/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeout);
         
         const data = await response.json();
         
         if (!response.ok) {
             throw new Error(data.error || 'Login failed');
+        }
+        
+        if (!data.user || !data.token) {
+            throw new Error('Invalid response from server');
         }
         
         // Store token and user session
@@ -146,7 +156,17 @@ async function validateAndLogin(event) {
         
     } catch (error) {
         console.error('Login error:', error);
-        showError('emailError', error.message || 'Invalid email or password');
+        
+        let errorMsg = 'Invalid email or password';
+        if (error.name === 'AbortError') {
+            errorMsg = 'Connection timeout. Make sure backend server is running on http://localhost:5000';
+        } else if (error.message === 'Failed to fetch') {
+            errorMsg = 'Cannot connect to server. Make sure backend is running on http://localhost:5000';
+        } else {
+            errorMsg = error.message || errorMsg;
+        }
+        
+        showError('emailError', errorMsg);
         
         // Reset button
         const button = document.querySelector('form button');
@@ -242,19 +262,29 @@ async function validateAndSignup(event) {
         // Remove @ from username if present (backend will add it)
         const cleanUsername = username.replace('@', '');
         
-        // Call backend API
+        // Call backend API with timeout
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
         const response = await fetch('http://localhost:5000/api/auth/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password, name, username: cleanUsername })
+            body: JSON.stringify({ email, password, name, username: cleanUsername }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeout);
         
         const data = await response.json();
         
         if (!response.ok) {
             throw new Error(data.error || 'Signup failed');
+        }
+        
+        if (!data.user || !data.token) {
+            throw new Error('Invalid response from server');
         }
         
         // Store token and user session
@@ -279,13 +309,22 @@ async function validateAndSignup(event) {
     } catch (error) {
         console.error('Signup error:', error);
         
+        let errorMsg = 'Signup failed. Please try again.';
+        if (error.name === 'AbortError') {
+            errorMsg = 'Connection timeout. Make sure backend server is running on http://localhost:5000';
+        } else if (error.message === 'Failed to fetch') {
+            errorMsg = 'Cannot connect to server. Make sure backend is running on http://localhost:5000';
+        } else {
+            errorMsg = error.message || errorMsg;
+        }
+        
         // Show appropriate error
         if (error.message.includes('email')) {
-            showError('emailError2', error.message);
+            showError('emailError2', errorMsg);
         } else if (error.message.includes('username')) {
-            showError('usernameError', error.message);
+            showError('usernameError', errorMsg);
         } else {
-            showError('emailError2', error.message || 'Signup failed. Please try again.');
+            showError('emailError2', errorMsg);
         }
         
         // Reset button

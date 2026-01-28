@@ -85,14 +85,7 @@ function getUserProfileStorageKey(email) {
 }
 
 // Profile functionality
-// User-specific posts storage key
-function getPostsStorageKey() {
-    const userSession = getUserSession();
-    if (userSession && userSession.id) {
-        return `nexora_posts_${userSession.id}`;
-    }
-    return 'nexora_posts_default';
-}
+const POSTS_STORAGE_KEY = 'nexora_posts_v1';
 
 // Get STORAGE_KEY based on current user
 function getStorageKey() {
@@ -148,56 +141,8 @@ let profile = loadProfile();
 // ===================================
 
 // Follow/Unfollow System Storage
-// User-specific following/followers storage keys
-function getFollowingStorageKey() {
-    const userSession = getUserSession();
-    if (userSession && userSession.id) {
-        return `nexora_following_${userSession.id}`;
-    }
-    return 'nexora_following_default';
-}
-
-function getFollowersStorageKey() {
-    const userSession = getUserSession();
-    if (userSession && userSession.id) {
-        return `nexora_followers_${userSession.id}`;
-    }
-    return 'nexora_followers_default';
-}
-
-// Get followers
-function getFollowers() {
-    try {
-        const key = getFollowersStorageKey();
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-// Get following
-function getFollowing() {
-    try {
-        const key = getFollowingStorageKey();
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-// Save followers
-function saveFollowers(followers) {
-    const key = getFollowersStorageKey();
-    localStorage.setItem(key, JSON.stringify(followers));
-}
-
-// Save following
-function saveFollowing(following) {
-    const key = getFollowingStorageKey();
-    localStorage.setItem(key, JSON.stringify(following));
-}
+const FOLLOWERS_STORAGE_KEY = 'nexora_followers';
+const FOLLOWING_STORAGE_KEY = 'nexora_following';
 
 // Available users to follow (simulated users)
 const availableUsers = [
@@ -208,6 +153,36 @@ const availableUsers = [
     { id: 'user5', name: 'Web Dev Daily', username: '@webdevdaily', avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=' },
     { id: 'user6', name: 'Code Tips', username: '@codetips', avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=' },
 ];
+
+// Get followers
+function getFollowers() {
+    try {
+        const raw = localStorage.getItem(FOLLOWERS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Get following
+function getFollowing() {
+    try {
+        const raw = localStorage.getItem(FOLLOWING_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save followers
+function saveFollowers(followers) {
+    localStorage.setItem(FOLLOWERS_STORAGE_KEY, JSON.stringify(followers));
+}
+
+// Save following
+function saveFollowing(following) {
+    localStorage.setItem(FOLLOWING_STORAGE_KEY, JSON.stringify(following));
+}
 
 // Follow a user
 function followUser(userId) {
@@ -317,7 +292,7 @@ function openPostsModal() {
     
     // Load posts from storage
     try {
-        const postsData = localStorage.getItem(getPostsStorageKey());
+        const postsData = localStorage.getItem(POSTS_STORAGE_KEY);
         const allPosts = postsData ? JSON.parse(postsData) : [];
         
         if (allPosts.length === 0) {
@@ -379,8 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Listen for storage changes to update posts when new ones are created
     window.addEventListener('storage', (e) => {
-        const postsKey = getPostsStorageKey();
-        if (e.key === postsKey) {
+        if (e.key === POSTS_STORAGE_KEY) {
             renderPosts();
             renderSavedPosts();
         }
@@ -415,32 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPosts();
         updatePostsCount();
     }, 100);
-    
-    // Handle hash routing for modals (from home page clicks)
-    handleHashRouting();
 });
-
-// Handle hash routing to open appropriate modals
-function handleHashRouting() {
-    const hash = window.location.hash.substring(1); // Remove # from hash
-    
-    if (hash === 'followers') {
-        openFollowersModal();
-    } else if (hash === 'following') {
-        openFollowingModal();
-    } else if (hash === 'posts') {
-        // Switch to posts tab
-        const postsTabBtn = document.querySelector('[data-tab="posts"]');
-        if (postsTabBtn) {
-            postsTabBtn.click();
-        }
-    }
-    
-    // Clear the hash after handling
-    if (hash) {
-        window.history.replaceState(null, null, window.location.pathname);
-    }
-}
 
 // Storage functions
 function loadProfile() {
@@ -491,7 +440,7 @@ function saveProfile() {
 // Load posts from storage
 function loadPostsFromStorage() {
     try {
-        const raw = localStorage.getItem(getPostsStorageKey());
+        const raw = localStorage.getItem(POSTS_STORAGE_KEY);
         return raw ? JSON.parse(raw) : [];
     } catch (e) {
         return [];
@@ -538,13 +487,8 @@ function renderProfile() {
     document.getElementById('profileName').textContent = displayName;
     document.getElementById('profileUsername').textContent = displayUsername;
     document.getElementById('profileBio').textContent = profile.bio;
-    
-    // Use actual counts from storage
-    const followers = getFollowers();
-    const following = getFollowing();
-    document.getElementById('followersCount').textContent = followers.length;
-    document.getElementById('followingCount').textContent = following.length;
-    
+    document.getElementById('followersCount').textContent = profile.followers;
+    document.getElementById('followingCount').textContent = profile.following;
     updatePostsCount(); // Update posts count from actual posts
     document.getElementById('workInfo').textContent = profile.work;
     document.getElementById('educationInfo').textContent = profile.education;
@@ -618,7 +562,7 @@ function renderPosts() {
         } else {
             // If no image, show a placeholder or caption preview
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -701,7 +645,7 @@ function renderSavedPosts() {
             imageHtml = `<img src="${postImage}" alt="Saved Post" class="post-card-image">`;
         } else {
             imageHtml = `
-                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #ff9c33); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
+                <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), #1a91da); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; padding: 20px;">
                     ${post.caption ? (post.caption.length > 100 ? post.caption.substring(0, 100) + '...' : post.caption) : 'Post'}
                 </div>
             `;
@@ -1053,7 +997,7 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #ff9c33)'};
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, var(--primary-color), #1a91da)'};
         color: white;
         padding: 16px 24px;
         border-radius: 12px;
@@ -1095,4 +1039,52 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// Settings Modal
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+const emailToggle = document.getElementById("emailNotificationsToggle");
+const logoutBtn = document.getElementById("logoutBtn");
+const changePasswordBtn = document.getElementById("changePasswordBtn");
+
+// Open / Close
+settingsBtn.addEventListener("click", () => {
+    settingsModal.classList.add("active");
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+    settingsModal.classList.remove("active");
+});
+
+// Load Settings
+darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
+emailToggle.checked = localStorage.getItem("emailNotifications") === "true";
+
+if (darkModeToggle.checked) {
+    document.body.classList.add("dark-mode");
+}
+
+// Dark Mode
+darkModeToggle.addEventListener("change", () => {
+    localStorage.setItem("darkMode", darkModeToggle.checked);
+    document.body.classList.toggle("dark-mode", darkModeToggle.checked);
+});
+
+// Email Notifications
+emailToggle.addEventListener("change", () => {
+    localStorage.setItem("emailNotifications", emailToggle.checked);
+});
+
+// Change Password
+changePasswordBtn.addEventListener("click", () => {
+    alert("Redirect to Change Password Page");
+});
+
+// Logout
+logoutBtn.addEventListener("click", () => {
+    localStorage.clear();
+    /z:/Social-Media/Social-Media/Login/login.html
+});
 

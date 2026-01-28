@@ -3,21 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../CSS/styles.css">
-    <link rel="stylesheet" href="../CSS/explore.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="explore.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Nexora - Explore</title>
-    <script>
-        // Hide logout button before page renders on non-profile pages
-        if (!window.location.pathname.includes('profile.html')) {
-            document.addEventListener('DOMContentLoaded', function() {
-                const logoutBtn = document.getElementById('logoutNavItem');
-                const loginBtn = document.getElementById('authNavItem');
-                if (logoutBtn) logoutBtn.style.display = 'none';
-                if (loginBtn && localStorage.getItem('userSession')) loginBtn.style.display = 'none';
-            });
-        }
-    </script>
 </head>
 <body>
     <nav class="navbar">
@@ -31,8 +20,6 @@
                 <li><a href="messages.html" class="nav-link">Messages</a></li>
                 <li><a href="notifications.html" class="nav-link">Notifications</a></li>
                 <li><a href="profile.html" class="nav-link">Profile</a></li>
-                <li id="authNavItem"><a href="../../Login/FrontEnd/login.html" class="nav-link" style="color: #1DA1F2;"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li id="logoutNavItem" style="display: none;"><a href="#" onclick="logout(event)" class="nav-link" style="color: #E0245E;">Logout</a></li>
             </ul>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -41,14 +28,6 @@
             </div>
         </div>
     </nav>
-
-    <script>
-        // Hide logout button immediately on non-profile pages
-        if (!window.location.pathname.includes('profile.html')) {
-            const logoutBtn = document.getElementById('logoutNavItem');
-            if (logoutBtn) logoutBtn.style.display = 'none';
-        }
-    </script>
 
     <main class="explore-content">
         <div class="explore-header">
@@ -281,6 +260,6 @@
         </section>
     </main> 
 
-    <script src="../JS/explore.js"></script>
+    <script src="explore.js"></script>
 </body>
 </html>

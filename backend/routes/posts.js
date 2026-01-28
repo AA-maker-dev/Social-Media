@@ -19,6 +19,23 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get posts by user (must be before /:id to prevent route matching issues)
+router.get('/user/:user_id', async (req, res) => {
+    try {
+        const posts = await allAsync(`
+            SELECT p.id, p.caption, p.user_id, p.likes, p.created_at, u.name, u.username
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = ?
+            ORDER BY p.created_at DESC
+        `, [req.params.user_id]);
+
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Get post by ID
 router.get('/:id', async (req, res) => {
     try {
@@ -101,23 +118,6 @@ router.post('/:id/reaction', async (req, res) => {
         }
 
         res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get posts by user
-router.get('/user/:user_id', async (req, res) => {
-    try {
-        const posts = await allAsync(`
-            SELECT p.id, p.caption, p.user_id, p.likes, p.created_at, u.name, u.username
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.user_id = ?
-            ORDER BY p.created_at DESC
-        `, [req.params.user_id]);
-
-        res.json(posts);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

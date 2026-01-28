@@ -858,7 +858,7 @@ body {
     width: 100%;
     border-radius: 16px;
     object-fit: contain;
-    max-height: 1000px;
+    max-height: 600px;
     margin-top: 12px;
     box-shadow: var(--shadow-md);
     transition: var(--transition);
@@ -868,67 +868,6 @@ body {
 .post-image:hover {
     transform: scale(1.02);
     box-shadow: var(--shadow-lg);
-}
-
-/* Gallery grid for multiple images */
-.post-gallery {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 250px;
-    gap: 8px;
-    margin-top: 12px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-}
-
-.post-gallery.gallery-3 {
-    grid-template-columns: 1.5fr 1fr;
-    grid-template-rows: repeat(2, 200px);
-}
-
-.post-gallery.gallery-4 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 250px;
-}
-
-.post-gallery.gallery-5-plus {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 250px;
-}
-
-.gallery-item {
-    position: relative;
-    overflow: hidden;
-    background: #000;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.gallery-item:hover {
-    filter: brightness(0.8);
-}
-
-.gallery-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: var(--transition);
-}
-
-.gallery-item:hover .gallery-image {
-    transform: scale(1.05);
-}
-
-/* Show "+X more" indicator on last item if more than 4 images */
-.gallery-item.more-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
-    font-size: 36px;
-    font-weight: bold;
-    color: white;
 }
 
 .post-stats {
@@ -1758,112 +1697,4 @@ a, button, input, label {
     .admin-hero {
         grid-template-columns: 1fr;
     }
-}
-/* Lightbox Modal */
-.lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.lightbox-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 90%;
-    height: 90%;
-    max-width: 1000px;
-    max-height: 800px;
-}
-
-.lightbox-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    animation: zoomIn 0.3s ease-in-out;
-}
-
-@keyframes zoomIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    z-index: 1001;
-}
-
-.lightbox-close:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(1.1);
-}
-
-.lightbox-prev, .lightbox-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 28px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    z-index: 1001;
-}
-
-.lightbox-prev { left: 20px; }
-.lightbox-next { right: 20px; }
-
-.lightbox-prev:hover, .lightbox-next:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.lightbox-counter {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 24px;
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 1001;
 }

@@ -35,16 +35,8 @@ async function seedDefaultUsers() {
         }
 
         const bcryptRounds = 10;
-        const avatarUrls = [
-            'https://i.pravatar.cc/150?img=1',
-            'https://i.pravatar.cc/150?img=2',
-            'https://i.pravatar.cc/150?img=3',
-            'https://i.pravatar.cc/150?img=4',
-            'https://i.pravatar.cc/150?img=5',
-            'https://i.pravatar.cc/150?img=6',
-            'https://i.pravatar.cc/150?img=7',
-            'https://i.pravatar.cc/150?img=8'
-        ];
+        // Default avatar for all users until they upload their own
+        const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
 
         const users = [
             {
@@ -54,7 +46,7 @@ async function seedDefaultUsers() {
                 name: 'Admin User',
                 username: '@admin',
                 role: 'admin',
-                avatar: avatarUrls[0],
+                avatar: defaultAvatar,
                 bio: 'System Administrator',
                 location: 'San Francisco, CA',
                 website: 'https://example.com'
@@ -66,7 +58,7 @@ async function seedDefaultUsers() {
                 name: 'Test User',
                 username: '@testuser',
                 role: 'customer',
-                avatar: avatarUrls[1],
+                avatar: defaultAvatar,
                 bio: 'Testing the platform',
                 location: 'New York, NY',
                 website: ''
@@ -78,7 +70,7 @@ async function seedDefaultUsers() {
                 name: 'Demo Account',
                 username: '@demo',
                 role: 'customer',
-                avatar: avatarUrls[2],
+                avatar: defaultAvatar,
                 bio: 'Demo user for testing',
                 location: 'Boston, MA',
                 website: ''

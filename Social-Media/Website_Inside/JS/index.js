@@ -314,7 +314,7 @@ async function renderSuggestedUsersHome() {
         } else {
             container.innerHTML = suggestedUsers.map(user => {
                 // Use user's avatar from profile data, fallback to default
-                const avatar = user.avatar || 'https://i.pravatar.cc/150?img=0';
+                const avatar = user.avatar || DEFAULT_AVATAR_URL;
                 return `
                     <div class="suggestion">
                         <img src="${avatar}" alt="${user.name}" class="avatar-sm">
@@ -373,7 +373,7 @@ function getProfileStorageKey() {
     return 'nexora_profile_default';
 }
 
-const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
 
 function loadProfile() {
     try {
@@ -430,7 +430,7 @@ function updateHomeProfile() {
     }
     
     // Update avatars with profile picture from userSession or profile
-    const avatarUrl = userSession?.avatar || profile?.profilePicture || 'https://i.pravatar.cc/150?img=0';
+    const avatarUrl = userSession?.avatar || profile?.profilePicture || DEFAULT_AVATAR_URL;
     
     // Update sidebar avatar
     const sidebarAvatar = document.getElementById('userProfileAvatar');

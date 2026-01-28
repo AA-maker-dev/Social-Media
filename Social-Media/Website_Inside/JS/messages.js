@@ -2,6 +2,9 @@
 // SESSION & AUTHENTICATION MANAGEMENT
 // ===================================
 
+// Default avatar URL
+const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
+
 // Check if user is logged in (optional - does not redirect)
 function checkUserSession() {
     const userSession = localStorage.getItem('userSession');
@@ -78,7 +81,7 @@ const defaultConversations = [
     {
         id: '1',
         name: 'Maya Chen',
-        avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=',
+        avatar: DEFAULT_AVATAR_URL,
         lastMessage: "Hey! How's your project going?",
         time: '2m ago',
         unread: 2,
@@ -87,7 +90,7 @@ const defaultConversations = [
     {
         id: '2',
         name: 'Alex Rodriguez',
-        avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=',
+        avatar: DEFAULT_AVATAR_URL,
         lastMessage: 'Thanks for the help with the design!',
         time: '1h ago',
         unread: 0,
@@ -96,7 +99,7 @@ const defaultConversations = [
     {
         id: '3',
         name: 'Sarah Johnson',
-        avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=',
+        avatar: DEFAULT_AVATAR_URL,
         lastMessage: 'Can we schedule a meeting?',
         time: '3h ago',
         unread: 1,
@@ -105,7 +108,7 @@ const defaultConversations = [
     {
         id: '4',
         name: 'Tech Team',
-        avatar: 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=',
+        avatar: DEFAULT_AVATAR_URL,
         lastMessage: 'New update available!',
         time: '5h ago',
         unread: 0,
@@ -311,7 +314,7 @@ function createMessageElement(msg, conversation) {
                 ${msg.sender === 'me' ? `<span class="message-status"><i class="fas fa-${msg.read ? 'check-double' : 'check'}" style="color: ${msg.read ? '#1DA1F2' : 'rgba(255,255,255,0.7)'};"></i></span>` : ''}
             </div>
         </div>
-        ${msg.sender === 'me' ? `<img src="https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=" alt="You" class="message-avatar">` : ''}
+        ${msg.sender === 'me' ? `<img src="${DEFAULT_AVATAR_URL}" alt="You" class="message-avatar">` : ''}
     `;
     
     return message;

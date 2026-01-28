@@ -106,7 +106,7 @@ function getStorageKey() {
 const STORAGE_KEY = getStorageKey();
 
 // Default avatar URL
-const DEFAULT_AVATAR_URL = 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=';
+const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
 
 // Default cover image (gradient)
 const DEFAULT_COVER_IMAGE = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';

@@ -2,6 +2,9 @@
 // SESSION & AUTHENTICATION MANAGEMENT
 // ===================================
 
+// Default avatar URL
+const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
+
 // Check if user is logged in (optional - does not redirect)
 function checkUserSession() {
     const userSession = localStorage.getItem('userSession');
@@ -79,7 +82,7 @@ const defaultNotifications = [
         type: 'like',
         user: {
             name: 'Maya Chen',
-            avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@mayachen'
         },
         action: 'liked your post',
@@ -93,7 +96,7 @@ const defaultNotifications = [
         type: 'comment',
         user: {
             name: 'Alex Rodriguez',
-            avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@alexrod'
         },
         action: 'commented on your post',
@@ -107,7 +110,7 @@ const defaultNotifications = [
         type: 'follow',
         user: {
             name: 'Sarah Johnson',
-            avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@sarahj'
         },
         action: 'started following you',
@@ -121,7 +124,7 @@ const defaultNotifications = [
         type: 'mention',
         user: {
             name: 'Tech Team',
-            avatar: 'https://media.istockphoto.com/id/1485546774/photo/bald-man-smiling-at-camera-standing-with-arms-crossed.jpg?s=612x612&w=0&k=20&c=9vuq6HxeSZfhZ7Jit_2HPVLyoajffb7h_SbWssh_bME=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@techteam'
         },
         action: 'mentioned you in a post',
@@ -135,7 +138,7 @@ const defaultNotifications = [
         type: 'like',
         user: {
             name: 'Design Studio',
-            avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@designstudio'
         },
         action: 'and 12 others liked your post',
@@ -149,7 +152,7 @@ const defaultNotifications = [
         type: 'share',
         user: {
             name: 'Web Dev Pro',
-            avatar: 'https://media.istockphoto.com/id/2172317014/photo/happy-hispanic-man-working-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=9evc002hmjsuha6TiO8OftVTuZIE71Hr3qhmq8vRRH0=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@webdevpro'
         },
         action: 'shared your post',
@@ -163,7 +166,7 @@ const defaultNotifications = [
         type: 'comment',
         user: {
             name: 'Maya Chen',
-            avatar: 'https://media.istockphoto.com/id/1364917563/photo/businessman-smiling-with-arms-crossed-on-white-background.jpg?s=612x612&w=0&k=20&c=NtM9Wbs1DBiGaiowsxJY6wNCnLf0POa65rYEwnZymrM=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@mayachen'
         },
         action: 'replied to your comment',
@@ -177,7 +180,7 @@ const defaultNotifications = [
         type: 'follow',
         user: {
             name: 'Code Master',
-            avatar: 'https://media.istockphoto.com/id/2025682392/photo/man-adult-caucasian-with-beard-and-eyeglasses-work-on-laptop-at-home.jpg?s=612x612&w=0&k=20&c=in_Ty2-lelhpQEDCFtOJhAnrDdueeHgZYpkT0zdL2Qw=',
+            avatar: DEFAULT_AVATAR_URL,
             username: '@codemaster'
         },
         action: 'started following you',

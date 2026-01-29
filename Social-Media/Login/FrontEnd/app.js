@@ -116,7 +116,11 @@ async function validateAndLogin(event) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+            ? 'http://localhost:5000/api' 
+            : 'https://api.viteflo.com/api';
+        
+        const response = await fetch(`${apiUrl}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -159,9 +163,9 @@ async function validateAndLogin(event) {
         
         let errorMsg = 'Invalid email or password';
         if (error.name === 'AbortError') {
-            errorMsg = 'Connection timeout. Make sure backend server is running on http://localhost:5000';
+            errorMsg = 'Connection timeout. Please try again.';
         } else if (error.message === 'Failed to fetch') {
-            errorMsg = 'Cannot connect to server. Make sure backend is running on http://localhost:5000';
+            errorMsg = 'Cannot connect to server. Please check your internet connection.';
         } else {
             errorMsg = error.message || errorMsg;
         }
@@ -266,7 +270,11 @@ async function validateAndSignup(event) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         
-        const response = await fetch('http://localhost:5000/api/auth/signup', {
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+            ? 'http://localhost:5000/api' 
+            : 'https://api.viteflo.com/api';
+        
+        const response = await fetch(`${apiUrl}/auth/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -311,9 +319,9 @@ async function validateAndSignup(event) {
         
         let errorMsg = 'Signup failed. Please try again.';
         if (error.name === 'AbortError') {
-            errorMsg = 'Connection timeout. Make sure backend server is running on http://localhost:5000';
+            errorMsg = 'Connection timeout. Please try again.';
         } else if (error.message === 'Failed to fetch') {
-            errorMsg = 'Cannot connect to server. Make sure backend is running on http://localhost:5000';
+            errorMsg = 'Cannot connect to server. Please check your internet connection.';
         } else {
             errorMsg = error.message || errorMsg;
         }

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "npm install --legacy-peer-deps",
+  "installCommand": "npm install --legacy-peer-deps",
+  "env": {
+    "CORS_ORIGIN": "@cors_origin",
+    "DATABASE_URL": "@database_url",
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "backend/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}

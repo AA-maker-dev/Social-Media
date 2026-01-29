@@ -301,7 +301,10 @@ async function renderSuggestedUsersHome() {
         const currentUserId = userSession?.id;
         
         // Fetch all registered users from backend
-        const response = await fetch('http://localhost:5000/api/users/');
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+            ? 'http://localhost:5000/api' 
+            : 'https://api.viteflo.com/api';
+        const response = await fetch(`${apiUrl}/users/`);
         const users = await response.json();
         
         // Filter: exclude current user and already followed users

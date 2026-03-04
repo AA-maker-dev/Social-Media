@@ -4,7 +4,7 @@ REM This script prepares your project for deployment
 
 echo.
 echo ================================
-echo   Nexora Deployment Setup
+echo   Viteflow Deployment Setup
 echo ================================
 echo.
 
@@ -27,8 +27,8 @@ if not exist .git (
 
 echo.
 echo [2/5] Configuring git...
-git config user.name "Nexora Developer"
-git config user.email "dev@nexora.local"
+git config user.name "Viteflow Developer"
+git config user.email "dev@viteflow.local"
 echo [✓] Git configured
 
 echo.

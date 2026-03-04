@@ -32,12 +32,12 @@ app.use('/api/comments', commentsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Nexora API is running' });
+    res.json({ status: 'ok', message: 'Viteflow API is running' });
 });
 
 // Root
 app.get('/', (req, res) => {
-    res.json({ message: 'Nexora Social Media API', version: '1.0.0' });
+    res.json({ message: 'Viteflow Social Media API', version: '1.0.0' });
 });
 
 // Error handling
@@ -50,8 +50,8 @@ app.use((err, req, res, next) => {
 initDatabase()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`Nexora API running on http://localhost:${PORT}`);
-            console.log(`Database: SQLite3 at ./nexora.db`);
+            console.log(`Viteflow API running on http://localhost:${PORT}`);
+            console.log(`Database: SQLite3 at ./viteflow.db`);
         });
     })
     .catch((err) => {

@@ -1,14 +1,14 @@
 // Mock user database (in a real app, this would be on the server)
 const DEFAULT_USERS = [
-    { email: 'admin@nexora.com', password: 'Admin@123', name: 'Admin', username: '@admin', role: 'admin' },
-    { email: 'user@nexora.com', password: 'User@123', name: 'Test User', username: '@testuser', role: 'customer' },
-    { email: 'demo@nexora.com', password: 'Demo@123', name: 'Demo Account', username: '@demo', role: 'customer' }
+    { email: 'admin@viteflow.com', password: 'Admin@123', name: 'Admin', username: '@admin', role: 'admin' },
+    { email: 'user@viteflow.com', password: 'User@123', name: 'Test User', username: '@testuser', role: 'customer' },
+    { email: 'demo@viteflow.com', password: 'Demo@123', name: 'Demo Account', username: '@demo', role: 'customer' }
 ];
 
 // Load users from localStorage or use default
 function loadUsers() {
     try {
-        const stored = localStorage.getItem('nexora_users_db');
+        const stored = localStorage.getItem('viteflow_users_db');
         if (stored) {
             const parsed = JSON.parse(stored);
             return parsed.map(u => ({ role: 'customer', ...u }));
@@ -22,7 +22,7 @@ function loadUsers() {
 // Save users to localStorage
 function saveUsers(usersArray) {
     try {
-        localStorage.setItem('nexora_users_db', JSON.stringify(usersArray));
+        localStorage.setItem('viteflow_users_db', JSON.stringify(usersArray));
     } catch (e) {
         console.error('Error saving users:', e);
     }

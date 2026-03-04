@@ -1,12 +1,12 @@
 @echo off
-REM Nexora Social Media Platform - Full Auto Start Script
+REM Viteflow Social Media Platform - Full Auto Start Script
 REM This script automatically starts backend and frontend
 
 setlocal enabledelayedexpansion
 
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║         Nexora Social Media Platform - Auto Starting...      ║
+echo ║         Viteflow Social Media Platform - Auto Starting...      ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
@@ -31,7 +31,7 @@ if not exist "node_modules" (
 
 echo [✓] Starting Backend Server...
 REM Start backend server in a new window with a title
-start "Nexora Backend Server" cmd /k "npm start"
+start "Viteflow Backend Server" cmd /k "npm start"
 
 REM Wait for backend to initialize
 echo [*] Waiting for backend to start (5 seconds)...

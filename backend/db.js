@@ -3,7 +3,7 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 
-const DB_PATH = path.join(__dirname, 'nexora.db');
+const DB_PATH = path.join(__dirname, 'viteflow.db');
 
 let db = null;
 
@@ -41,7 +41,7 @@ async function seedDefaultUsers() {
         const users = [
             {
                 id: uuidv4(),
-                email: 'admin@nexora.com',
+                email: 'admin@viteflow.com',
                 password: await bcrypt.hash('Admin@123', bcryptRounds),
                 name: 'Admin User',
                 username: '@admin',
@@ -53,7 +53,7 @@ async function seedDefaultUsers() {
             },
             {
                 id: uuidv4(),
-                email: 'test@nexora.com',
+                email: 'test@viteflow.com',
                 password: await bcrypt.hash('Test@123', bcryptRounds),
                 name: 'Test User',
                 username: '@testuser',
@@ -65,7 +65,7 @@ async function seedDefaultUsers() {
             },
             {
                 id: uuidv4(),
-                email: 'demo@nexora.com',
+                email: 'demo@viteflow.com',
                 password: await bcrypt.hash('Demo@123', bcryptRounds),
                 name: 'Demo Account',
                 username: '@demo',

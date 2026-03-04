@@ -73,8 +73,8 @@ if (hamburger) {
 }
 
 // Messages functionality
-const STORAGE_KEY = 'nexora_messages_v1';
-const CONVERSATIONS_KEY = 'nexora_conversations_v1';
+const STORAGE_KEY = 'viteflow_messages_v1';
+const CONVERSATIONS_KEY = 'viteflow_conversations_v1';
 
 // Sample conversations data
 const defaultConversations = [
@@ -120,7 +120,7 @@ const defaultConversations = [
 const defaultMessages = {
     '1': [
         { id: 'm1', text: "Hey Abhi! How's your project going?", sender: 'other', time: new Date(Date.now() - 3600000).toISOString(), read: true },
-        { id: 'm2', text: 'Pretty good, just working on Nexora 🚀', sender: 'me', time: new Date(Date.now() - 3500000).toISOString(), read: true },
+        { id: 'm2', text: 'Pretty good, just working on Viteflow 🚀', sender: 'me', time: new Date(Date.now() - 3500000).toISOString(), read: true },
         { id: 'm3', text: "That's awesome! Can't wait to see it.", sender: 'other', time: new Date(Date.now() - 3400000).toISOString(), read: true },
         { id: 'm4', text: 'Hey! How\'s your project going?', sender: 'other', time: new Date(Date.now() - 120000).toISOString(), read: false }
     ],

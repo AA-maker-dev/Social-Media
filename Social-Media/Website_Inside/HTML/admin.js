@@ -81,9 +81,9 @@ function renderActions(id, items) {
     `).join('');
 }
 
-const POSTS_KEY = 'nexora_posts_v1';
-const USERS_KEY = 'nexora_users_db';
-const REPORTS_KEY = 'nexora_reports_v1';
+const POSTS_KEY = 'viteflow_posts_v1';
+const USERS_KEY = 'viteflow_users_db';
+const REPORTS_KEY = 'viteflow_reports_v1';
 
 function formatNumber(num) {
     const n = Number(num) || 0;

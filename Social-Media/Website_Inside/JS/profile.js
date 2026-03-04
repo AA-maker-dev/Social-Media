@@ -81,7 +81,7 @@ function getUserSession() {
 
 // Get user-specific storage key based on email
 function getUserProfileStorageKey(email) {
-    return `nexora_profile_${email}`;
+    return `viteflow_profile_${email}`;
 }
 
 // Profile functionality
@@ -89,9 +89,9 @@ function getUserProfileStorageKey(email) {
 function getPostsStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_posts_${userSession.id}`;
+        return `viteflow_posts_${userSession.id}`;
     }
-    return 'nexora_posts_default';
+    return 'viteflow_posts_default';
 }
 
 // Get STORAGE_KEY based on current user
@@ -100,7 +100,7 @@ function getStorageKey() {
     if (userSession && userSession.email) {
         return getUserProfileStorageKey(userSession.email);
     }
-    return 'nexora_profile_default';
+    return 'viteflow_profile_default';
 }
 
 const STORAGE_KEY = getStorageKey();
@@ -152,17 +152,17 @@ let profile = loadProfile();
 function getFollowingStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_following_${userSession.id}`;
+        return `viteflow_following_${userSession.id}`;
     }
-    return 'nexora_following_default';
+    return 'viteflow_following_default';
 }
 
 function getFollowersStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_followers_${userSession.id}`;
+        return `viteflow_followers_${userSession.id}`;
     }
-    return 'nexora_followers_default';
+    return 'viteflow_followers_default';
 }
 
 // Get followers

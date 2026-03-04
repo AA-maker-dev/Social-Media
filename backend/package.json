@@ -1,7 +1,7 @@
 {
-  "name": "nexora-backend",
+  "name": "viteflow-backend",
   "version": "1.0.0",
-  "description": "Nexora Social Media Backend API",
+  "description": "Viteflow Social Media Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

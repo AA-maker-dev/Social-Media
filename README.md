@@ -1,4 +1,4 @@
-# Nexora Social Media Platform - Production Deployment Guide
+# Viteflow Social Media Platform - Production Deployment Guide
 
 ## 🚀 Quick Deploy
 
@@ -70,7 +70,7 @@ CMD ["npm", "start"]
 ## 📊 Database
 
 **Type:** SQLite3  
-**Location:** `backend/nexora.db` (auto-created)
+**Location:** `backend/viteflow.db` (auto-created)
 
 For production, consider migrating to PostgreSQL:
 - Update `db.js` to use `pg` instead of `sqlite3`
@@ -105,7 +105,7 @@ For production, consider migrating to PostgreSQL:
 | Issue | Solution |
 |-------|----------|
 | Port 5000 in use | Change PORT in `.env` |
-| Database error | Delete `backend/nexora.db` and restart |
+| Database error | Delete `backend/viteflow.db` and restart |
 | CORS errors | Update CORS_ORIGIN in `.env` |
 | Static files not loading | Check file paths in HTML |
 
@@ -116,7 +116,7 @@ For production, consider migrating to PostgreSQL:
 tail -f logs/server.log
 
 # Monitor database
-sqlite3 backend/nexora.db ".tables"
+sqlite3 backend/viteflow.db ".tables"
 
 # Check Node process
 ps aux | grep node
@@ -126,10 +126,10 @@ ps aux | grep node
 
 ```bash
 # Backup database
-cp backend/nexora.db backup/nexora_$(date +%Y%m%d).db
+cp backend/viteflow.db backup/viteflow_$(date +%Y%m%d).db
 
 # Backup entire project
-tar -czf backup/nexora_$(date +%Y%m%d).tar.gz .
+tar -czf backup/viteflow_$(date +%Y%m%d).tar.gz .
 ```
 
 ## 🚀 Production Checklist
@@ -151,7 +151,7 @@ For issues:
 1. Check backend logs: `npm start` output
 2. Check browser console: F12 → Console tab
 3. Verify API endpoint: `http://localhost:5000/api/health`
-4. Check database: `backend/nexora.db` exists
+4. Check database: `backend/viteflow.db` exists
 
 ## 📝 Additional Notes
 

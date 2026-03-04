@@ -84,7 +84,7 @@ function cleanupCorruptedPostData() {
         const userSession = getUserSession();
         if (!userSession || !userSession.id) return;
         
-        const userKey = `nexora_posts_${userSession.id}`;
+        const userKey = `viteflow_posts_${userSession.id}`;
         const postsData = localStorage.getItem(userKey);
         
         if (!postsData) return;
@@ -127,17 +127,17 @@ if (document.readyState === 'loading') {
 function getFollowingStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_following_${userSession.id}`;
+        return `viteflow_following_${userSession.id}`;
     }
-    return 'nexora_following_default';
+    return 'viteflow_following_default';
 }
 
 function getFollowersStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_followers_${userSession.id}`;
+        return `viteflow_followers_${userSession.id}`;
     }
-    return 'nexora_followers_default';
+    return 'viteflow_followers_default';
 }
 
 // Get following list for current user
@@ -176,7 +176,7 @@ function saveFollowers(followers) {
 
 // Add follower to a user's follower list (bidirectional)
 function addFollowerToUser(userId, currentUser) {
-    const followerKey = `nexora_followers_${userId}`;
+    const followerKey = `viteflow_followers_${userId}`;
     try {
         const raw = localStorage.getItem(followerKey);
         let followers = raw ? JSON.parse(raw) : [];
@@ -195,7 +195,7 @@ function addFollowerToUser(userId, currentUser) {
 
 // Remove follower from a user's follower list
 function removeFollowerFromUser(userId, currentUserId) {
-    const followerKey = `nexora_followers_${userId}`;
+    const followerKey = `viteflow_followers_${userId}`;
     try {
         const raw = localStorage.getItem(followerKey);
         let followers = raw ? JSON.parse(raw) : [];
@@ -365,7 +365,7 @@ if (hamburger) {
 // Profile data sync
 // Get user-specific profile storage key
 function getUserProfileStorageKey(email) {
-    return `nexora_profile_${email}`;
+    return `viteflow_profile_${email}`;
 }
 
 function getProfileStorageKey() {
@@ -373,7 +373,7 @@ function getProfileStorageKey() {
     if (userSession && userSession.email) {
         return getUserProfileStorageKey(userSession.email);
     }
-    return 'nexora_profile_default';
+    return 'viteflow_profile_default';
 }
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&scale=80&backgroundColor=c0aede';
@@ -643,9 +643,9 @@ window.addEventListener('followersUpdated', (e) => {
 function getUserPostsStorageKey() {
     const userSession = getUserSession();
     if (userSession && userSession.id) {
-        return `nexora_posts_${userSession.id}`;
+        return `viteflow_posts_${userSession.id}`;
     }
-    return 'nexora_posts_default';
+    return 'viteflow_posts_default';
 }
 
 // Get all posts from all users (for feed)
@@ -658,7 +658,7 @@ function getAllUserPosts() {
         // Get posts from each user stored in localStorage
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key && key.startsWith('nexora_posts_')) {
+            if (key && key.startsWith('viteflow_posts_')) {
                 const raw = localStorage.getItem(key);
                 if (raw) {
                     try {
@@ -683,10 +683,10 @@ function getAllUserPosts() {
     }
 }
 
-const STORAGE_KEY = 'nexora_posts_v1';
+const STORAGE_KEY = 'viteflow_posts_v1';
 
 // IndexedDB setup for storing images
-const DB_NAME = 'nexora_db';
+const DB_NAME = 'viteflow_db';
 const STORE_NAME = 'posts_store';
 
 async function initIndexedDB() {
@@ -1436,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Save the post to the owner's storage (whoever created the post)
             // This ensures reactions/likes persist even when reacting to others' posts
             const postOwnerId = post.userId;
-            const postOwnerKey = `nexora_posts_${postOwnerId}`;
+            const postOwnerKey = `viteflow_posts_${postOwnerId}`;
             
             try {
                 const ownerPostsData = localStorage.getItem(postOwnerKey);
@@ -1573,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const messages = [
         { sender: 'Maya', text: "Hey Abhi! How’s your project going?" },
-        { sender: 'You', text: 'Pretty good, just working on Nexora 🚀' },
+        { sender: 'You', text: 'Pretty good, just working on Viteflow 🚀' },
         { sender: 'Maya', text: "That’s awesome! Can’t wait to see it." }
     ];
 

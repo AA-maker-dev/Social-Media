@@ -73,7 +73,7 @@ if (hamburger) {
 }
 
 // Notifications functionality
-const STORAGE_KEY = 'nexora_notifications_v1';
+const STORAGE_KEY = 'viteflow_notifications_v1';
 
 // Sample notifications data
 const defaultNotifications = [

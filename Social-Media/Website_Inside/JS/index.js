@@ -1215,13 +1215,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const longPressDuration = 500;
 
         // Show reaction panel on hover (desktop)
-        reactionContainer.addEventListener('mouseenter', () => {
-            reactionPanel.classList.add('show');
-        });
+        let reactionCloseTimer = null;
 
-        reactionContainer.addEventListener('mouseleave', () => {
-            reactionPanel.classList.remove('show');
-        });
+        const openReactionPanel = () => {
+            if (reactionCloseTimer) {
+                clearTimeout(reactionCloseTimer);
+                reactionCloseTimer = null;
+            }
+            reactionPanel.classList.add('show');
+        };
+
+        const scheduleCloseReactionPanel = () => {
+            if (reactionCloseTimer) {
+                clearTimeout(reactionCloseTimer);
+            }
+            reactionCloseTimer = setTimeout(() => {
+                const isHovering = reactionContainer.matches(':hover') || reactionPanel.matches(':hover');
+                if (!isHovering) {
+                    reactionPanel.classList.remove('show');
+                }
+            }, 120);
+        };
+
+        reactionContainer.addEventListener('mouseenter', openReactionPanel);
+        reactionContainer.addEventListener('mouseleave', scheduleCloseReactionPanel);
+        reactionPanel.addEventListener('mouseenter', openReactionPanel);
+        reactionPanel.addEventListener('mouseleave', scheduleCloseReactionPanel);
 
         // Long-press detection for mobile
         likeBtn.addEventListener('touchstart', () => {

@@ -30,6 +30,18 @@ function saveUsers(usersArray) {
 
 let users = loadUsers();
 
+function getApiBaseUrl() {
+    const host = window.location.hostname;
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '';
+    const isPrivateIp = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(host);
+
+    if (isLocalhost || isPrivateIp) {
+        return 'http://localhost:5000/api';
+    }
+
+    return 'https://api.viteflo.com/api';
+}
+
 function getLandingPageForRole(role) {
     const basePath = '../../Website_Inside/HTML/';
     const normalized = (role || 'customer').toLowerCase();
@@ -116,9 +128,7 @@ async function validateAndLogin(event) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         
-        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-            ? 'http://localhost:5000/api' 
-            : 'https://api.viteflo.com/api';
+        const apiUrl = getApiBaseUrl();
         
         const response = await fetch(`${apiUrl}/auth/login`, {
             method: 'POST',
@@ -270,9 +280,7 @@ async function validateAndSignup(event) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         
-        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-            ? 'http://localhost:5000/api' 
-            : 'https://api.viteflo.com/api';
+        const apiUrl = getApiBaseUrl();
         
         const response = await fetch(`${apiUrl}/auth/signup`, {
             method: 'POST',

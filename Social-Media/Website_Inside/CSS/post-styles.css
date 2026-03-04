@@ -266,23 +266,6 @@
     background: var(--light-color);
 }
 
-.reaction-badge {
-    display: inline-block;
-    margin-right: 4px;
-}
-
-.reactions-display {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-}
-
-.reactions-label {
-    font-size: 13px;
-    color: var(--gray-color);
-}
-
 @media (max-width: 768px) {
     .post-creator {
         flex-direction: column;
